@@ -1,0 +1,48 @@
+/* Estilos personalizados para la página Home */
+.ion-page {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+  }
+  
+  .ion-page ion-header {
+    background-color: var(--ion-color-primary);
+    color: var(--ion-color-light);
+  }
+  
+  .ion-page ion-title {
+    font-size: 1.5rem;
+    font-weight: bold;
+  }
+  
+  .ion-page ion-content {
+    --ion-background-color: var(--ion-color-light);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    padding: 16px;
+  }
+  
+  .ion-page #container {
+    text-align: center;
+  }
+  
+  .ion-page #container strong {
+    display: block;
+    margin: 16px;
+    font-size: 1.2rem;
+  }
+  
+  .ion-page #container p {
+    margin: 0;
+    font-size: 1rem;
+    color: var(--ion-color-medium);
+  }
+  
+  .ion-page #container a {
+    color: var(--ion-color-primary);
+    text-decoration: none;
+  }
+  
