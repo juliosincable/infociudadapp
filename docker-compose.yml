@@ -3,20 +3,33 @@ services:
     build: ./frontend
     ports:
       - "3000:3000"
+    volumes:
+      - ./frontend:/app
+      - frontend-node-modules:/app/node_modules
+    command: ["npm", "start"]
     depends_on:
       - backend
+
   backend:
     build: ./backend
     ports:
       - "4000:4000"
+    volumes:
+      - ./backend:/app
+      - backend-node-modules:/app/node_modules
+    command: ["npm", "start"]
     depends_on:
       - mongo
+
   mongo:
-    build: ./database
+    image: mongo
     ports:
       - "27017:27017"
     volumes:
       - mongo-data:/data/db
 
 volumes:
+  frontend-node-modules:
+  backend-node-modules:
   mongo-data:
+    external: false

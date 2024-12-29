@@ -12,6 +12,11 @@ mongoose.connect('mongodb://mongo:27017/mydatabase', {
   useUnifiedTopology: true,
 });
 
+// Ruta básica para verificar el funcionamiento del servidor
+app.get('/', (req, res) => {
+  res.send('Servidor backend está funcionando correctamente.');
+});
+
 // Esquema y modelo de ejemplo
 const itemSchema = new mongoose.Schema({
   name: String,
