@@ -16,5 +16,8 @@ COPY . .
 # Exponer el puerto de la aplicación
 EXPOSE 4000
 
-# Comando para ejecutar la aplicación
-CMD ["node", "index.js"]
+# Comando para ejecutar la aplicación en modo desarrollo
+CMD ["npm", "run", "dev"]
+
+RUN npm install -g nodemon
+

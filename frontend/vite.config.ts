@@ -1,16 +1,28 @@
-import { defineConfig } from 'vite';
+import { defineConfig, UserConfig } from 'vite';
 import react from '@vitejs/plugin-react';
+import { resolve } from 'path';
 
-export default defineConfig({
+const config: UserConfig = {
   plugins: [react()],
-  build: {
-    rollupOptions: {
-      external: ['history']
-    }
+  resolve: {
+    alias: {
+      '@': resolve(__dirname, 'src'),
+    },
   },
   server: {
-    host: '0.0.0.0', // Permitir que el servidor sea accesible externamente
-    port: 3000,      // Especificar el puerto 3000
-    https: false     // Asegurarse de que HTTPS esté deshabilitado
-  }
-});
+    host: true,
+    port: 3000,
+    strictPort: true,  // Asegurar que Vite falle si el puerto está ocupado
+    hmr: {
+      overlay: false,
+    },
+    cors: true,  // Habilitar CORS
+  },
+  build: {
+    outDir: 'dist',
+    sourcemap: true,  // Generar mapas de código fuente para la depuración
+  },
+};
+
+export default defineConfig(config);
+

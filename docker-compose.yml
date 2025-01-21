@@ -17,7 +17,7 @@ services:
     volumes:
       - ./backend:/app
       - backend-node-modules:/app/node_modules
-    command: ["npm", "start"]
+    command: ["npm", "run", "dev"]
     depends_on:
       - mongo
 

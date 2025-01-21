@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Route, Switch, Redirect } from 'react-router-d
 import { IonApp, IonRouterOutlet, setupIonicReact } from '@ionic/react';
 import { IonReactRouter } from '@ionic/react-router';
 import Home from './pages/Home';
+import Empresas from './pages/Empresas'; // Importa la nueva página
 
 /* Core CSS required for Ionic components to work properly */
 import '@ionic/react/css/core.css';
@@ -25,6 +26,7 @@ const App: React.FC = () => (
       <IonRouterOutlet basePath="/" ionPage={true} {...({} as any)}>
         <Switch>
           <Route path="/home" component={Home} />
+          <Route path="/empresas" component={Empresas} /> {/* Nueva ruta para Empresas */}
           <Redirect from="/" to="/home" />
         </Switch>
       </IonRouterOutlet>
@@ -33,9 +35,5 @@ const App: React.FC = () => (
 );
 
 export default App;
-
-
-
-
 
 
