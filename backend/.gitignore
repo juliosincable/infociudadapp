@@ -13,10 +13,6 @@ node_modules/
 config.js
 config.json
 
-# Archivos de caché
-.cache/
-.parcel-cache/
-
 # Archivos de log
 *.log
 
@@ -36,3 +32,13 @@ yarn.lock
 .history
 *.swp
 ._*
+
+# Carpetas de subida de archivos (si aplica)
+uploads/
+
+# Archivos de base de datos local (si aplica)
+*.sqlite
+*.db
+
+# Archivos de caché (si aplica)
+.cache/

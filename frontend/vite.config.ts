@@ -1,28 +1,34 @@
-import { defineConfig, UserConfig } from 'vite';
+import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { resolve } from 'path';
 
-const config: UserConfig = {
+export default defineConfig({
   plugins: [react()],
   resolve: {
     alias: {
       '@': resolve(__dirname, 'src'),
+      'axios': resolve(__dirname, 'node_modules/axios/index.js'), // Alias específico para axios
     },
+    extensions: ['.js', '.ts', '.jsx', '.tsx', '.json'],
   },
   server: {
     host: true,
     port: 3000,
-    strictPort: true,  // Asegurar que Vite falle si el puerto está ocupado
+    strictPort: true,
     hmr: {
       overlay: false,
     },
-    cors: true,  // Habilitar CORS
+    cors: true,
+    proxy: {
+      '/api': {
+        target: 'http://localhost:4000', // URL de tu backend
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api/, ''),
+      },
+    },
   },
   build: {
     outDir: 'dist',
-    sourcemap: true,  // Generar mapas de código fuente para la depuración
+    sourcemap: true,
   },
-};
-
-export default defineConfig(config);
-
+});
