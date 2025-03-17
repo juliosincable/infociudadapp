@@ -7,6 +7,9 @@ export const fetchEmpresas = async (
 ) => {
   try {
     const response = await fetch(API_URL);
+    if (!response.ok) {
+      throw new Error(`Error fetching empresas: ${response.statusText}`);
+    }
     const data = await response.json();
     setEmpresas(data);
   } catch (error) {
@@ -14,6 +17,7 @@ export const fetchEmpresas = async (
   }
 };
 
+// Crear una nueva empresa
 export const createEmpresa = async (
   empresa: Empresa,
   setEmpresas: (empresas: Empresa[] | ((prev: Empresa[]) => Empresa[])) => void
@@ -26,12 +30,21 @@ export const createEmpresa = async (
       },
       body: JSON.stringify(empresa)
     });
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Error creating empresa: ${response.statusText} - ${errorText}`);
+    }
     const data = await response.json();
     setEmpresas((prev: Empresa[]) => [...prev, data]);
   } catch (error) {
-    console.error("Error creating empresa:", error);
+    if (error instanceof Error) {
+      console.error("Error creating empresa:", error.message);
+    } else {
+      console.error("Error creating empresa:", error);
+    }
   }
 };
+
 
 export const updateEmpresa = async (
   id: string,
@@ -46,6 +59,9 @@ export const updateEmpresa = async (
       },
       body: JSON.stringify(empresa)
     });
+    if (!response.ok) {
+      throw new Error(`Error updating empresa: ${response.statusText}`);
+    }
     const data = await response.json();
     setEmpresas((prev: Empresa[]) =>
       prev.map((e: Empresa) => (e._id === id ? data : e))
@@ -60,7 +76,10 @@ export const deleteEmpresa = async (
   setEmpresas: (empresas: Empresa[] | ((prev: Empresa[]) => Empresa[])) => void
 ) => {
   try {
-    await fetch(`${API_URL}/${id}`, { method: 'DELETE' });
+    const response = await fetch(`${API_URL}/${id}`, { method: 'DELETE' });
+    if (!response.ok) {
+      throw new Error(`Error deleting empresa: ${response.statusText}`);
+    }
     setEmpresas((prev: Empresa[]) => prev.filter((e: Empresa) => e._id !== id));
   } catch (error) {
     console.error("Error deleting empresa:", error);

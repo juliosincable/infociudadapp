@@ -1,3 +1,5 @@
+version: '3.8'
+
 services:
   frontend:
     build: ./frontend
@@ -9,6 +11,8 @@ services:
     command: ["npm", "start"]
     depends_on:
       - backend
+    networks:
+      - app-network
 
   backend:
     build: ./backend
@@ -20,6 +24,8 @@ services:
     command: ["npm", "run", "dev"]
     depends_on:
       - mongo
+    networks:
+      - app-network
 
   mongo:
     image: mongo
@@ -27,9 +33,15 @@ services:
       - "27017:27017"
     volumes:
       - mongo-data:/data/db
+    networks:
+      - app-network
 
 volumes:
   frontend-node-modules:
   backend-node-modules:
   mongo-data:
     external: false
+
+networks:
+  app-network:
+    driver: bridge

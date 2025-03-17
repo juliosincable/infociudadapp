@@ -5,6 +5,8 @@ import { IonReactRouter } from '@ionic/react-router';
 import Home from './pages/Home';
 import EmpresasForm from './pages/EmpresasForm'; // Importa la nueva página
 import EmpresasList from './pages/EmpresasList'; // Importa la nueva página
+import PublicPage from './pages/PublicPage'; // Importa la nueva página
+
 import { EmpresasProvider } from "./EmpresasContext"; // Importa el proveedor del contexto
 
 /* Core CSS required for Ionic components to work properly */
@@ -31,7 +33,8 @@ const App: React.FC = () => (
           <Route path="/home" component={Home} />
           <Route path="/empresas" component={EmpresasForm} /> {/* Nueva ruta para Empresas */}
           <Route path="/empresaslist" component={EmpresasList} /> {/* Nueva ruta para Empresas */}
-          <Redirect from="/" to="/home" />
+          <Route path="/publicpage" component={PublicPage} /> {/* Nueva ruta para Empresas */}
+          <Redirect from="/" to="/publicpage" />
         </Switch>
       </IonRouterOutlet>
     </IonReactRouter>
