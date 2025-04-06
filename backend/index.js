@@ -6,26 +6,35 @@ const app = express();
 const dbURI = process.env.MONGODB_URI || "mongodb://mongo:27017/empresas";
 const PORT = 4000;
 
+// Configuración de CORS manual
+app.use((req, res, next) => {
+  res.setHeader("Access-Control-Allow-Origin", process.env.CORS_ORIGIN || "http://localhost:3000");
+  res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+  if (req.method === "OPTIONS") {
+    return res.sendStatus(200); // Finaliza las solicitudes preflight
+  }
+  next();
+});
+
 app.use(express.json());
 
 mongoose.connect(dbURI, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
-  // useCreateIndex: true, // Esta opción ya no es necesaria en Mongoose 6.x
-}).then(() => console.log('Conexión a la base de datos exitosa'))
-  .catch((error) => console.error('Conexión a la base de datos fallida:', error));
+})
+  .then(() => console.log("Conexión a la base de datos exitosa"))
+  .catch((error) => console.error("Conexión a la base de datos fallida:", error));
 
 // Definimos un esquema y modelo de Mongoose
 const EmpresaSchema = new mongoose.Schema({
-  name: { type: String, required: true, trim: true },
-  email: { type: String, required: true, trim: true, unique: true },
-  nombreEmpresa: { type: String, required: true, trim: true },
+  _id: { type: mongoose.Schema.Types.ObjectId },
+  nombre: { type: String, required: true, trim: true },
   direccion: { type: String, required: true, trim: true },
   categoria: { type: String, required: true, trim: true },
   whatsapp: { type: String, required: true, trim: true },
   instagram: { type: String, required: true, trim: true },
-  // Add more fields as needed with appropriate validations
-});
+}, { timestamps: true });
 
 const Empresa = mongoose.model("Empresa", EmpresaSchema);
 
@@ -36,7 +45,7 @@ app.post("/empresas", async (req, res) => {
     const savedEmpresa = await newEmpresa.save();
     res.status(201).json(savedEmpresa);
   } catch (error) {
-    res.status(500).json({ error: error.message }); // Enviar errores en formato JSON
+    res.status(500).json({ error: error.message });
   }
 });
 
@@ -46,7 +55,7 @@ app.get("/empresas", async (_req, res) => {
     const empresas = await Empresa.find({});
     res.status(200).json(empresas);
   } catch (error) {
-    res.status(500).json({ error: error.message }); // Enviar errores en formato JSON
+    res.status(500).json({ error: error.message });
   }
 });
 
@@ -55,9 +64,9 @@ app.get("/empresas/:id", async (req, res) => {
   try {
     const empresa = await Empresa.findById(req.params.id);
     if (!empresa) return res.status(404).json({ error: "Empresa no encontrada" });
-    res.status(200).json(empresa); // Usar res.json en lugar de res.send
+    res.status(200).json(empresa);
   } catch (error) {
-    res.status(500).json({ error: error.message }); // Enviar errores en formato JSON
+    res.status(500).json({ error: error.message });
   }
 });
 
@@ -70,9 +79,9 @@ app.put("/empresas/:id", async (req, res) => {
       { new: true }
     );
     if (!updatedEmpresa) return res.status(404).json({ error: "Empresa no encontrada" });
-    res.status(200).json(updatedEmpresa); // Usar res.json en lugar de res.send
+    res.status(200).json(updatedEmpresa);
   } catch (error) {
-    res.status(500).json({ error: error.message }); // Enviar errores en formato JSON
+    res.status(500).json({ error: error.message });
   }
 });
 
@@ -81,9 +90,9 @@ app.delete("/empresas/:id", async (req, res) => {
   try {
     const deletedEmpresa = await Empresa.findByIdAndDelete(req.params.id);
     if (!deletedEmpresa) return res.status(404).json({ error: "Empresa no encontrada" });
-    res.status(200).json(deletedEmpresa); // Usar res.json en lugar de res.send
+    res.status(200).json(deletedEmpresa);
   } catch (error) {
-    res.status(500).json({ error: error.message }); // Enviar errores en formato JSON
+    res.status(500).json({ error: error.message });
   }
 });
 

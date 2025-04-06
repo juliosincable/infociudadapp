@@ -15,17 +15,19 @@ export const EmpresasProvider: React.FC<{ children: ReactNode }> = ({ children }
     }
   };
 
-  const createEmpresaHandler = async (empresa: Empresa) => {
+  const createEmpresaHandler = async (empresa: Omit<Empresa, "id">) => {
     try {
-      await createEmpresa(empresa, setEmpresas);
+      const newEmpresa: Empresa = { id: crypto.randomUUID(), ...empresa };
+      await createEmpresa(newEmpresa, setEmpresas);
     } catch (error) {
       console.error("Error creating empresa:", error);
     }
   };
 
-  const updateEmpresaHandler = async (id: string, empresa: Empresa) => {
+  const updateEmpresaHandler = async (id: string, empresa: Omit<Empresa, "id">) => {
     try {
-      await updateEmpresa(id, empresa, setEmpresas);
+      const updatedEmpresa: Empresa = { id, ...empresa };
+      await updateEmpresa(id, updatedEmpresa, setEmpresas);
     } catch (error) {
       console.error("Error updating empresa:", error);
     }
