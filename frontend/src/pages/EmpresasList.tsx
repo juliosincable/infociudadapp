@@ -1,7 +1,7 @@
 // src/pages/EmpresasList.tsx
 
 import * as React from "react";
-import { useState, useEffect, useCallback } from "react"; // Añadimos useCallback
+import { useState, useEffect } from "react"; // Eliminamos useCallback de aquí si solo lo usaremos para la carga inicial
 import {
     IonContent,
     IonHeader,
@@ -18,34 +18,25 @@ import {
     IonToast,
     InputChangeEventDetail,
 } from "@ionic/react";
-import { add, search, refresh, create } from "ionicons/icons"; // Asegúrate de importar 'create'
+import { add, search, refresh, create } from "ionicons/icons";
 import { useEmpresas } from "../EmpresasContext";
 import { Empresa } from "../types";
 
 const EmpresasList: React.FC = () => {
+    // Usamos directamente los estados de empresas, fetchEmpresas, isLoading y error del contexto
     const { empresas, fetchEmpresas, isLoading: contextLoading, error: contextError } = useEmpresas();
     const [searchTerm, setSearchTerm] = useState("");
-    const [isLoading, setIsLoading] = useState(false); // Para control de carga local
-    const [errorMessage, setErrorMessage] = useState<string | null>(null); // Para mensajes de error locales
+    
+    // *** ELIMINAMOS los estados isLoading y errorMessage locales, ya que el contexto los proporciona ***
+    // const [isLoading, setIsLoading] = useState(false);
+    // const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-    // Usamos useCallback para envolver cargarEmpresas, lo que garantiza que la función sea estable
-    // y no cause re-renders innecesarios en useEffect si fetchEmpresas del contexto es estable.
-    const cargarEmpresas = useCallback(async () => {
-        setIsLoading(true); // Activa el estado de carga local
-        try {
-            await fetchEmpresas(); // Llama a la función del contexto
-        } catch (error) {
-            console.error("Error al cargar empresas:", error);
-            setErrorMessage("Error al cargar empresas. Intente nuevamente."); // Configura el mensaje de error local
-        } finally {
-            setIsLoading(false); // Desactiva el estado de carga local
-        }
-    }, [fetchEmpresas]); // Depende de fetchEmpresas para que se re-cree si cambia
-
+    // Usamos useEffect para cargar empresas cuando el componente se monta
     useEffect(() => {
-        // Llama a la función de carga al montar el componente
-        cargarEmpresas();
-    }, [cargarEmpresas]); // Depende de cargarEmpresas
+        // Llama a fetchEmpresas directamente desde el contexto
+        // Esto es seguro porque fetchEmpresas en el contexto está envuelto en useCallback
+        fetchEmpresas();
+    }, [fetchEmpresas]); // Depende de fetchEmpresas, que es estable gracias a useCallback en el contexto
 
     const handleSearchChange = (e: CustomEvent<InputChangeEventDetail>) => {
         setSearchTerm(e.detail.value ? String(e.detail.value) : "");
@@ -61,7 +52,7 @@ const EmpresasList: React.FC = () => {
             <IonHeader>
                 <IonToolbar>
                     <IonTitle>Listado de Empresas</IonTitle>
-                    <IonButton slot="end" onClick={() => cargarEmpresas()}>
+                    <IonButton slot="end" onClick={() => fetchEmpresas()}> {/* Llamada directa a fetchEmpresas del contexto */}
                         <IonIcon icon={refresh} />
                     </IonButton>
                     <IonButton slot="end" routerLink="/admin/empresas/form">
@@ -103,13 +94,13 @@ const EmpresasList: React.FC = () => {
                     )}
                 </IonList>
 
-                {/* Combina estados de carga y error del contexto y locales */}
-                <IonLoading isOpen={isLoading || contextLoading} message={"Cargando..."} />
+                {/* Usamos directamente los estados de carga y error del contexto */}
+                <IonLoading isOpen={contextLoading} message={"Cargando empresas..."} />
                 <IonToast
-                    isOpen={!!(errorMessage || contextError)}
-                    message={errorMessage || contextError || ""}
+                    isOpen={!!contextError} // La tostada se abre si hay un error del contexto
+                    message={contextError || ""}
                     duration={3000}
-                    onDidDismiss={() => setErrorMessage(null)}
+                    onDidDismiss={() => {}} // No hacemos nada aquí, el contexto se encarga de limpiar su error
                     color="danger"
                 />
             </IonContent>
