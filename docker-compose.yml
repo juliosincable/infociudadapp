@@ -60,7 +60,7 @@ services:
       - app-network
 
   mongo:
-    image: mongo:4.4
+    image: mongo:4.4 # ¡Este es el cambio clave!
     ports:
       # Generalmente no se expone el puerto de la base de datos al exterior (host) en producción
       # a menos que tengas una razón específica y controles el acceso estrictamente.

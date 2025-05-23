@@ -1,202 +1,120 @@
-import React, { useState, useEffect, useContext, useCallback } from 'react';
+// src/pages/EmpresasList.tsx
+
+import * as React from "react";
+import { useState, useEffect, useCallback } from "react"; // Añadimos useCallback
 import {
+    IonContent,
+    IonHeader,
     IonPage,
-    IonInput,
-    IonButton,
+    IonTitle,
+    IonToolbar,
+    IonList,
     IonItem,
     IonLabel,
-    IonList,
+    IonInput,
+    IonButton,
+    IonIcon,
     IonLoading,
     IonToast,
-    IonNote,
-    InputCustomEvent,
-} from '@ionic/react';
-import { useEmpresas } from "../EmpresasContext"; // Importar el hook y el contexto
+    InputChangeEventDetail,
+} from "@ionic/react";
+import { add, search, refresh, create } from "ionicons/icons"; // Asegúrate de importar 'create'
+import { useEmpresas } from "../EmpresasContext";
+import { Empresa } from "../types";
 
-// --- Tipos (Idealmente definidos en archivos separados) ---
+const EmpresasList: React.FC = () => {
+    const { empresas, fetchEmpresas, isLoading: contextLoading, error: contextError } = useEmpresas();
+    const [searchTerm, setSearchTerm] = useState("");
+    const [isLoading, setIsLoading] = useState(false); // Para control de carga local
+    const [errorMessage, setErrorMessage] = useState<string | null>(null); // Para mensajes de error locales
 
-interface Empresa {
-    id?: string;
-    nombre: string;
-    direccion: string;
-    categoria: string;
-    whatsapp: string;
-    instagram: string;
-}
+    // Usamos useCallback para envolver cargarEmpresas, lo que garantiza que la función sea estable
+    // y no cause re-renders innecesarios en useEffect si fetchEmpresas del contexto es estable.
+    const cargarEmpresas = useCallback(async () => {
+        setIsLoading(true); // Activa el estado de carga local
+        try {
+            await fetchEmpresas(); // Llama a la función del contexto
+        } catch (error) {
+            console.error("Error al cargar empresas:", error);
+            setErrorMessage("Error al cargar empresas. Intente nuevamente."); // Configura el mensaje de error local
+        } finally {
+            setIsLoading(false); // Desactiva el estado de carga local
+        }
+    }, [fetchEmpresas]); // Depende de fetchEmpresas para que se re-cree si cambia
 
-const initialFormData: Omit<Empresa, 'id'> = {
-    nombre: "",
-    direccion: "",
-    categoria: "",
-    whatsapp: "",
-    instagram: "",
-};
-
-const EmpresaForm: React.FC = () => {
-    // --- Contexto ---
-    const { fetchEmpresas, createEmpresa } = useEmpresas(); // Usar el hook personalizado
-
-    // --- Estado ---
-    const [formData, setFormData] = useState<Omit<Empresa, 'id'>>(initialFormData);
-    const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
-    const [formError, setFormError] = useState<string | null>(null);
-    const [showToast, setShowToast] = useState<{ show: boolean; message: string; color: string }>({
-        show: false,
-        message: '',
-        color: 'success',
-    });
-
-    // --- Efectos ---
     useEffect(() => {
-        const loadData = async () => {
-            try {
-                await fetchEmpresas();
-            } catch (error) {
-                console.error("Error fetching initial data:", error);
-                setShowToast({ show: true, message: 'Error al cargar datos iniciales.', color: 'danger' });
-            }
-        };
-        loadData();
-    }, [fetchEmpresas]);
+        // Llama a la función de carga al montar el componente
+        cargarEmpresas();
+    }, [cargarEmpresas]); // Depende de cargarEmpresas
 
-    // --- Manejadores ---
-    const handleChange = useCallback((event: InputCustomEvent) => {
-        const target = event.target as HTMLIonInputElement;
-        const name = target.name;
-        const value = event.detail.value ?? '';
-
-        if (name && name in formData) {
-            setFormData(prevData => ({
-                ...prevData,
-                [name]: value,
-            }));
-            if (formError) setFormError(null);
-        } else {
-            console.warn(`Input name "${name}" not found in formData state.`);
-        }
-    }, [formData, formError]);
-
-    const validateForm = (): boolean => {
-        if (!formData.nombre.trim()) {
-            setFormError("El nombre es obligatorio.");
-            return false;
-        }
-        setFormError(null);
-        return true;
+    const handleSearchChange = (e: CustomEvent<InputChangeEventDetail>) => {
+        setSearchTerm(e.detail.value ? String(e.detail.value) : "");
     };
 
-    const handleSubmit = useCallback(async (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!validateForm()) {
-            return;
-        }
+    const filteredEmpresas = empresas.filter((empresa) =>
+        empresa.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        empresa.categoria.toLowerCase().includes(searchTerm.toLowerCase())
+    );
 
-        setIsSubmitting(true);
-        setFormError(null);
-
-        try {
-            await createEmpresa(formData);
-            setShowToast({ show: true, message: 'Empresa guardada con éxito.', color: 'success' });
-            setFormData(initialFormData);
-        } catch (error: any) {
-            console.error("Error creating empresa:", error);
-            const errorMessage = error?.message || 'Ocurrió un error al guardar.';
-            setFormError(errorMessage);
-            setShowToast({ show: true, message: errorMessage, color: 'danger' });
-        } finally {
-            setIsSubmitting(false);
-        }
-    }, [formData, createEmpresa, fetchEmpresas, validateForm]);
-
-    // --- Renderizado ---
     return (
-        <IonPage placeholder={undefined} onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined}>
-            <form onSubmit={handleSubmit} style={{ padding: '16px' }}>
-                <IonList lines="full" placeholder={undefined} onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined}>
-                    <IonItem placeholder={undefined} onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined}>
-                        <IonLabel position="stacked" placeholder={undefined} onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined}>Nombre (*)</IonLabel>
-                        <IonInput
-                            name="nombre"
-                            value={formData.nombre}
-                            onIonChange={handleChange}
-                            placeholder="Ej: Mi Negocio S.A."
-                            required
-                            disabled={isSubmitting}
-                            onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined}
-                        />
-                    </IonItem>
+        <IonPage>
+            <IonHeader>
+                <IonToolbar>
+                    <IonTitle>Listado de Empresas</IonTitle>
+                    <IonButton slot="end" onClick={() => cargarEmpresas()}>
+                        <IonIcon icon={refresh} />
+                    </IonButton>
+                    <IonButton slot="end" routerLink="/admin/empresas/form">
+                        <IonIcon icon={add} />
+                    </IonButton>
+                </IonToolbar>
+            </IonHeader>
+            <IonContent fullscreen>
+                <IonItem>
+                    <IonLabel position="floating">Buscar Empresa</IonLabel>
+                    <IonInput
+                        value={searchTerm}
+                        onIonChange={handleSearchChange}
+                        maxlength={50}
+                    />
+                    <IonIcon slot="end" icon={search} />
+                </IonItem>
 
-                    <IonItem placeholder={undefined} onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined}>
-                        <IonLabel position="stacked" placeholder={undefined} onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined}>Dirección</IonLabel>
-                        <IonInput
-                            name="direccion"
-                            value={formData.direccion}
-                            onIonChange={handleChange}
-                            placeholder="Ej: Av. Principal #123"
-                            disabled={isSubmitting} onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined}
-                        />
-                    </IonItem>
-
-                    <IonItem placeholder={undefined} onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined}>
-                        <IonLabel position="stacked" placeholder={undefined} onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined}>Categoría</IonLabel>
-                        <IonInput
-                            name="categoria"
-                            value={formData.categoria}
-                            onIonChange={handleChange}
-                            placeholder="Ej: Restaurante, Tienda, Servicio"
-                            disabled={isSubmitting} onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined}
-                        />
-                    </IonItem>
-
-                    <IonItem placeholder={undefined} onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined}>
-                        <IonLabel position="stacked" placeholder={undefined} onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined}>WhatsApp</IonLabel>
-                        <IonInput
-                            type="tel"
-                            name="whatsapp"
-                            value={formData.whatsapp}
-                            onIonChange={handleChange}
-                            placeholder="Ej: +584121234567"
-                            disabled={isSubmitting} onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined}
-                        />
-                    </IonItem>
-
-                    <IonItem placeholder={undefined} onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined}>
-                        <IonLabel position="stacked" placeholder={undefined} onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined}>Instagram</IonLabel>
-                        <IonInput
-                            name="instagram"
-                            value={formData.instagram}
-                            onIonChange={handleChange}
-                            placeholder="Ej: @miempresa"
-                            disabled={isSubmitting} onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined}
-                        />
-                    </IonItem>
-
-                    {formError && (
-                        <IonItem lines="none" placeholder={undefined} onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined}>
-                            <IonNote color="danger" placeholder={undefined} onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined}>{formError}</IonNote>
+                <IonList>
+                    {filteredEmpresas.length > 0 ? (
+                        filteredEmpresas.map((empresa) => (
+                            <IonItem key={empresa.id}>
+                                <IonLabel>
+                                    <h2>{empresa.nombre}</h2>
+                                    <p>Dirección: {empresa.direccion}</p>
+                                    <p>Categoría: {empresa.categoria}</p>
+                                    <p>WhatsApp: {empresa.whatsapp}</p>
+                                    <p>Instagram: {empresa.instagram}</p>
+                                </IonLabel>
+                                <IonButton slot="end" routerLink={`/admin/empresas/form/${empresa.id}`}>
+                                    <IonIcon icon={create} />
+                                </IonButton>
+                            </IonItem>
+                        ))
+                    ) : (
+                        <IonItem>
+                            <IonLabel>No hay empresas para mostrar.</IonLabel>
                         </IonItem>
                     )}
                 </IonList>
 
-                <div style={{ marginTop: '20px' }}>
-                    <IonButton type="submit" expand="block" disabled={isSubmitting} placeholder={undefined} onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined}>
-                        {isSubmitting ? 'Guardando...' : 'Guardar Empresa'}
-                    </IonButton>
-                </div>
-            </form>
-
-            <IonLoading isOpen={isSubmitting} message={'Procesando...'} />
-
-            <IonToast
-                isOpen={showToast.show}
-                message={showToast.message}
-                duration={3000}
-                color={showToast.color}
-                onDidDismiss={() => setShowToast({ show: false, message: '', color: 'success' })}
-                position="top"
-            />
+                {/* Combina estados de carga y error del contexto y locales */}
+                <IonLoading isOpen={isLoading || contextLoading} message={"Cargando..."} />
+                <IonToast
+                    isOpen={!!(errorMessage || contextError)}
+                    message={errorMessage || contextError || ""}
+                    duration={3000}
+                    onDidDismiss={() => setErrorMessage(null)}
+                    color="danger"
+                />
+            </IonContent>
         </IonPage>
     );
 };
 
-export default EmpresaForm;
+export default EmpresasList;
