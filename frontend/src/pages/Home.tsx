@@ -1,6 +1,6 @@
 import { IonContent, IonHeader, IonPage, IonTitle, IonToolbar } from '@ionic/react';
 import ExploreContainer from '../components/ExploreContainer';
-import './Home.css';
+import { useTheme } from '../theme/ThemeContext'; // Importamos useTheme
 
 const Home: React.FC = () => (
   <IonPage {...({} as any)}>

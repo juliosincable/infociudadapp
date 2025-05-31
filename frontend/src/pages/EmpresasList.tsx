@@ -1,7 +1,7 @@
 // src/pages/EmpresasList.tsx
 
 import * as React from "react";
-import { useState, useEffect } from "react"; // Eliminamos useCallback de aquí si solo lo usaremos para la carga inicial
+import { useState, useEffect } from "react";
 import {
     IonContent,
     IonHeader,
@@ -20,23 +20,18 @@ import {
 } from "@ionic/react";
 import { add, search, refresh, create } from "ionicons/icons";
 import { useEmpresas } from "../EmpresasContext";
+import { useTheme } from "../theme/ThemeContext"; // ¡Importamos el hook del tema!
 import { Empresa } from "../types";
 
 const EmpresasList: React.FC = () => {
-    // Usamos directamente los estados de empresas, fetchEmpresas, isLoading y error del contexto
     const { empresas, fetchEmpresas, isLoading: contextLoading, error: contextError } = useEmpresas();
+    // Eliminamos 'toggleTheme' de la desestructuración, ya que el tema es automático
+    const { theme } = useTheme(); 
     const [searchTerm, setSearchTerm] = useState("");
-    
-    // *** ELIMINAMOS los estados isLoading y errorMessage locales, ya que el contexto los proporciona ***
-    // const [isLoading, setIsLoading] = useState(false);
-    // const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-    // Usamos useEffect para cargar empresas cuando el componente se monta
     useEffect(() => {
-        // Llama a fetchEmpresas directamente desde el contexto
-        // Esto es seguro porque fetchEmpresas en el contexto está envuelto en useCallback
         fetchEmpresas();
-    }, [fetchEmpresas]); // Depende de fetchEmpresas, que es estable gracias a useCallback en el contexto
+    }, [fetchEmpresas]);
 
     const handleSearchChange = (e: CustomEvent<InputChangeEventDetail>) => {
         setSearchTerm(e.detail.value ? String(e.detail.value) : "");
@@ -52,15 +47,16 @@ const EmpresasList: React.FC = () => {
             <IonHeader>
                 <IonToolbar>
                     <IonTitle>Listado de Empresas</IonTitle>
-                    <IonButton slot="end" onClick={() => fetchEmpresas()}> {/* Llamada directa a fetchEmpresas del contexto */}
+                    <IonButton slot="end" onClick={() => fetchEmpresas()}>
                         <IonIcon icon={refresh} />
                     </IonButton>
                     <IonButton slot="end" routerLink="/admin/empresas/form">
                         <IonIcon icon={add} />
                     </IonButton>
+                    {/* El botón de tema ha sido eliminado de aquí, ya que el tema es automático */}
                 </IonToolbar>
             </IonHeader>
-            <IonContent fullscreen>
+            <IonContent fullscreen className="ion-padding">
                 <IonItem>
                     <IonLabel position="floating">Buscar Empresa</IonLabel>
                     <IonInput
@@ -94,13 +90,12 @@ const EmpresasList: React.FC = () => {
                     )}
                 </IonList>
 
-                {/* Usamos directamente los estados de carga y error del contexto */}
                 <IonLoading isOpen={contextLoading} message={"Cargando empresas..."} />
                 <IonToast
-                    isOpen={!!contextError} // La tostada se abre si hay un error del contexto
+                    isOpen={!!contextError}
                     message={contextError || ""}
                     duration={3000}
-                    onDidDismiss={() => {}} // No hacemos nada aquí, el contexto se encarga de limpiar su error
+                    onDidDismiss={() => {}}
                     color="danger"
                 />
             </IonContent>

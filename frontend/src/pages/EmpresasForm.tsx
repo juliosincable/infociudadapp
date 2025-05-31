@@ -1,3 +1,5 @@
+// src/pages/EmpresasForm.tsx
+
 import * as React from "react";
 import { useState, useEffect, useCallback } from "react";
 import {
@@ -22,10 +24,13 @@ import {
 } from "@ionic/react";
 import { create, save, close, trash } from "ionicons/icons";
 import { useEmpresas } from "../EmpresasContext";
+import { useTheme } from "../theme/ThemeContext"; // ¡Importamos el hook del tema!
 import { Empresa } from "../types";
 
 const EmpresasForm: React.FC = () => {
     const { empresas, fetchEmpresas, updateEmpresa, createEmpresa, deleteEmpresa } = useEmpresas();
+    // Eliminamos 'toggleTheme' de la desestructuración, ya que el tema es automático
+    const { theme } = useTheme(); 
 
     const [formData, setFormData] = useState<Omit<Empresa, "id">>({
         nombre: "",
@@ -39,11 +44,10 @@ const EmpresasForm: React.FC = () => {
     const [empresaEditando, setEmpresaEditando] = useState<Empresa | null>(null);
     const [isLoading, setIsLoading] = useState(false);
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
-    const [successMessage, setSuccessMessage] = useState<string | null>(null); // Nuevo estado para mensajes de éxito
+    const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
-    const [presentAlert] = useIonAlert(); // Hook para alertas de Ionic
+    const [presentAlert] = useIonAlert();
 
-    // Usamos useCallback para memoizar cargarEmpresas y evitar re-creaciones innecesarias
     const cargarEmpresas = useCallback(async () => {
         setIsLoading(true);
         try {
@@ -54,11 +58,11 @@ const EmpresasForm: React.FC = () => {
         } finally {
             setIsLoading(false);
         }
-    }, [fetchEmpresas]); // fetchEmpresas es una dependencia del contexto, por lo que es estable
+    }, [fetchEmpresas]);
 
     useEffect(() => {
         cargarEmpresas();
-    }, [cargarEmpresas]); // Ahora depende de la versión memoizada
+    }, [cargarEmpresas]);
 
     const handleInputChange = (key: keyof Omit<Empresa, "id">, value: string | null | undefined) => {
         setFormData((prevData) => ({ ...prevData, [key]: value || "" }));
@@ -66,7 +70,7 @@ const EmpresasForm: React.FC = () => {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        setIsLoading(true); // Activar carga al inicio del envío
+        setIsLoading(true);
         try {
             await createEmpresa(formData);
             setFormData({
@@ -76,19 +80,19 @@ const EmpresasForm: React.FC = () => {
                 whatsapp: "",
                 instagram: "",
             });
-            await cargarEmpresas(); // Recargar después de crear
-            setSuccessMessage("Empresa creada exitosamente."); // Mensaje de éxito
+            await cargarEmpresas();
+            setSuccessMessage("Empresa creada exitosamente.");
         } catch (error) {
             console.error("Error al crear empresa:", error);
             setErrorMessage("Error al crear empresa. Intente nuevamente.");
         } finally {
-            setIsLoading(false); // Desactivar carga al finalizar
+            setIsLoading(false);
         }
     };
 
     const iniciarEdicion = (empresa: Empresa) => {
         setEditandoId(empresa.id);
-        setEmpresaEditando({ ...empresa }); // Copia completa de la empresa
+        setEmpresaEditando({ ...empresa });
     };
 
     const cancelarEdicion = () => {
@@ -110,9 +114,9 @@ const EmpresasForm: React.FC = () => {
             setIsLoading(true);
             try {
                 await updateEmpresa(editandoId, empresaEditando);
-                await cargarEmpresas(); // Recargar después de actualizar
+                await cargarEmpresas();
                 cancelarEdicion();
-                setSuccessMessage("Empresa actualizada exitosamente."); // Mensaje de éxito
+                setSuccessMessage("Empresa actualizada exitosamente.");
             } catch (error) {
                 console.error("Error al actualizar empresa:", error);
                 setErrorMessage("Error al actualizar empresa. Intente nuevamente.");
@@ -138,8 +142,8 @@ const EmpresasForm: React.FC = () => {
                         setIsLoading(true);
                         try {
                             await deleteEmpresa(id);
-                            await cargarEmpresas(); // Recargar después de eliminar
-                            setSuccessMessage("Empresa eliminada exitosamente."); // Mensaje de éxito
+                            await cargarEmpresas();
+                            setSuccessMessage("Empresa eliminada exitosamente.");
                         } catch (error) {
                             console.error("Error al eliminar empresa:", error);
                             setErrorMessage("Error al eliminar empresa. Intente nuevamente.");
@@ -157,9 +161,10 @@ const EmpresasForm: React.FC = () => {
             <IonHeader>
                 <IonToolbar>
                     <IonTitle>Gestión de Empresas</IonTitle>
+                    {/* El botón de tema ha sido eliminado de aquí, ya que el tema es automático */}
                 </IonToolbar>
             </IonHeader>
-            <IonContent className="ion-padding"> {/* Añade padding para mejor visualización */}
+            <IonContent className="ion-padding">
                 {/* Formulario de Creación */}
                 <IonCard>
                     <IonCardHeader>
@@ -173,8 +178,8 @@ const EmpresasForm: React.FC = () => {
                                     labelPlacement="floating"
                                     value={formData.nombre}
                                     onIonChange={(e) => handleInputChange("nombre", e.detail.value)}
-                                    maxlength={50} // Aumentar maxlenth para campos de texto
-                                    required // Campo requerido
+                                    maxlength={50}
+                                    required
                                 ></IonInput>
                             </IonItem>
                             <IonItem>
@@ -201,10 +206,10 @@ const EmpresasForm: React.FC = () => {
                                 <IonInput
                                     label="WhatsApp"
                                     labelPlacement="floating"
-                                    type="tel" // Tipo para teléfono
+                                    type="tel"
                                     value={formData.whatsapp}
                                     onIonChange={(e) => handleInputChange("whatsapp", e.detail.value)}
-                                    maxlength={15} // Longitud típica de un número de teléfono
+                                    maxlength={15}
                                     required
                                 ></IonInput>
                             </IonItem>
@@ -215,6 +220,7 @@ const EmpresasForm: React.FC = () => {
                                     value={formData.instagram}
                                     onIonChange={(e) => handleInputChange("instagram", e.detail.value)}
                                     maxlength={50}
+                                    required
                                 ></IonInput>
                             </IonItem>
                             <IonButton type="submit" expand="block" color="primary" className="ion-margin-top">
@@ -287,6 +293,7 @@ const EmpresasForm: React.FC = () => {
                                                     value={empresaEditando?.instagram || ''}
                                                     onIonChange={(e) => handleEditInputChange("instagram", e.detail.value)}
                                                     maxlength={50}
+                                                    required
                                                 ></IonInput>
                                             </IonItem>
                                             <IonButton onClick={guardarEdicion} expand="block" color="primary" className="ion-margin-top">
