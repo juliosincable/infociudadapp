@@ -17,17 +17,21 @@ import {
     IonLoading,
     IonToast,
     InputChangeEventDetail,
+    IonCard, // Importa IonCard
+    IonCardHeader, // Importa IonCardHeader
+    IonCardContent, // Importa IonCardContent
 } from "@ionic/react";
-import { add, search, refresh, create } from "ionicons/icons";
+import { add, search, refresh, create, close } from "ionicons/icons"; // Añade 'close' para el botón de cerrar detalles
 import { useEmpresas } from "../EmpresasContext";
-import { useTheme } from "../theme/ThemeContext"; // ¡Importamos el hook del tema!
+import { useTheme } from "../theme/ThemeContext";
 import { Empresa } from "../types";
 
 const EmpresasList: React.FC = () => {
     const { empresas, fetchEmpresas, isLoading: contextLoading, error: contextError } = useEmpresas();
-    // Eliminamos 'toggleTheme' de la desestructuración, ya que el tema es automático
-    const { theme } = useTheme(); 
+    const { theme } = useTheme();
     const [searchTerm, setSearchTerm] = useState("");
+    // Nuevo estado para la empresa seleccionada y sus detalles
+    const [selectedEmpresa, setSelectedEmpresa] = useState<Empresa | null>(null);
 
     useEffect(() => {
         fetchEmpresas();
@@ -35,6 +39,18 @@ const EmpresasList: React.FC = () => {
 
     const handleSearchChange = (e: CustomEvent<InputChangeEventDetail>) => {
         setSearchTerm(e.detail.value ? String(e.detail.value) : "");
+        // Cuando se busca, reinicia la empresa seleccionada
+        setSelectedEmpresa(null);
+    };
+
+    // Función para mostrar los detalles de una empresa
+    const handleShowDetails = (empresa: Empresa) => {
+        setSelectedEmpresa(empresa);
+    };
+
+    // Función para cerrar los detalles de una empresa
+    const handleCloseDetails = () => {
+        setSelectedEmpresa(null);
     };
 
     const filteredEmpresas = empresas.filter((empresa) =>
@@ -53,7 +69,6 @@ const EmpresasList: React.FC = () => {
                     <IonButton slot="end" routerLink="/admin/empresas/form">
                         <IonIcon icon={add} />
                     </IonButton>
-                    {/* El botón de tema ha sido eliminado de aquí, ya que el tema es automático */}
                 </IonToolbar>
             </IonHeader>
             <IonContent fullscreen className="ion-padding">
@@ -67,17 +82,39 @@ const EmpresasList: React.FC = () => {
                     <IonIcon slot="end" icon={search} />
                 </IonItem>
 
-                <IonList>
+                {/* Mostrar los detalles completos de la empresa seleccionada */}
+                {selectedEmpresa && (
+                    <IonCard className="ion-margin-top">
+                        <IonCardHeader>
+                            <h2>Detalles de: <strong>{selectedEmpresa.nombre}</strong></h2>
+                        </IonCardHeader>
+                        <IonCardContent>
+                            <p><strong>Dirección:</strong> {selectedEmpresa.direccion}</p>
+                            <p><strong>Categoría:</strong> {selectedEmpresa.categoria}</p>
+                            <p><strong>WhatsApp:</strong> {selectedEmpresa.whatsapp}</p>
+                            <p><strong>Instagram:</strong> {selectedEmpresa.instagram}</p>
+                            <IonButton expand="block" color="medium" onClick={handleCloseDetails} className="ion-margin-top">
+                                <IonIcon slot="start" icon={close} />
+                                Cerrar Detalles
+                            </IonButton>
+                             {/* Puedes agregar un botón de edición aquí si quieres, o solo permitir ver */}
+                            <IonButton expand="block" routerLink={`/admin/empresas/form/${selectedEmpresa.id}`} className="ion-margin-top">
+                                <IonIcon slot="start" icon={create} />
+                                Editar Empresa
+                            </IonButton>
+                        </IonCardContent>
+                    </IonCard>
+                )}
+
+                <IonList className="ion-margin-top">
                     {filteredEmpresas.length > 0 ? (
                         filteredEmpresas.map((empresa) => (
-                            <IonItem key={empresa.id}>
+                            <IonItem key={empresa.id} button onClick={() => handleShowDetails(empresa)}>
                                 <IonLabel>
+                                    {/* Muestra solo el nombre de la empresa */}
                                     <h2>{empresa.nombre}</h2>
-                                    <p>Dirección: {empresa.direccion}</p>
-                                    <p>Categoría: {empresa.categoria}</p>
-                                    <p>WhatsApp: {empresa.whatsapp}</p>
-                                    <p>Instagram: {empresa.instagram}</p>
                                 </IonLabel>
+                                {/* El botón de edición se mantiene aquí, pero ahora también puedes acceder a él desde la vista de detalles */}
                                 <IonButton slot="end" routerLink={`/admin/empresas/form/${empresa.id}`}>
                                     <IonIcon icon={create} />
                                 </IonButton>

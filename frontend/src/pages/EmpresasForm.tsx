@@ -1,7 +1,14 @@
-// src/pages/EmpresasForm.tsx
+// src/pages/EmpresasForm.tsx (Asegúrate de que este es el archivo que estás modificando)
 
 import * as React from "react";
 import { useState, useEffect, useCallback } from "react";
+// IMPORTANTE: Si estás usando react-router-dom para navegar a una ruta /form/:id
+// entonces deberías usar useParams. Si el formulario siempre está en la misma página,
+// y solo se usa para crear/editar en esa misma página, useParams NO es necesario.
+// Para este caso en particular, asumo que el formulario SIEMPRE está en la misma página
+// y por lo tanto, no necesitamos useParams. Si tu navegación es diferente, házmelo saber.
+// import { useParams } from "react-router-dom"; 
+
 import {
     IonContent,
     IonHeader,
@@ -20,28 +27,29 @@ import {
     IonIcon,
     IonLoading,
     IonToast,
-    useIonAlert // Importa useIonAlert para confirmaciones
+    useIonAlert
 } from "@ionic/react";
 import { create, save, close, trash } from "ionicons/icons";
 import { useEmpresas } from "../EmpresasContext";
-import { useTheme } from "../theme/ThemeContext"; // ¡Importamos el hook del tema!
+import { useTheme } from "../theme/ThemeContext";
 import { Empresa } from "../types";
 
 const EmpresasForm: React.FC = () => {
+    // const { id } = useParams<{ id?: string }>(); // Descomenta si usas el ID de la URL
     const { empresas, fetchEmpresas, updateEmpresa, createEmpresa, deleteEmpresa } = useEmpresas();
-    // Eliminamos 'toggleTheme' de la desestructuración, ya que el tema es automático
-    const { theme } = useTheme(); 
+    const { theme } = useTheme();
 
-    const [formData, setFormData] = useState<Omit<Empresa, "id">>({
+    const initialFormData: Omit<Empresa, "id"> = { // Define el estado inicial para reusar
         nombre: "",
         direccion: "",
         categoria: "",
         whatsapp: "",
         instagram: "",
-    });
+    };
 
-    const [editandoId, setEditandoId] = useState<string>("");
-    const [empresaEditando, setEmpresaEditando] = useState<Empresa | null>(null);
+    const [currentEmpresa, setCurrentEmpresa] = useState<Empresa | Omit<Empresa, "id">>(initialFormData);
+    const [isEditing, setIsEditing] = useState(false);
+    
     const [isLoading, setIsLoading] = useState(false);
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
     const [successMessage, setSuccessMessage] = useState<string | null>(null);
@@ -64,69 +72,69 @@ const EmpresasForm: React.FC = () => {
         cargarEmpresas();
     }, [cargarEmpresas]);
 
+    // Elimina este useEffect si no estás pasando el ID por URL y el formulario está en la misma página.
+    // Si estás usando `useParams`, entonces sí mantenlo.
+    /*
+    useEffect(() => {
+        if (id) {
+            const empresaToEdit = empresas.find(emp => emp.id === id);
+            if (empresaToEdit) {
+                setCurrentEmpresa(empresaToEdit);
+                setIsEditing(true);
+            } else {
+                setErrorMessage("Empresa no encontrada para edición.");
+                // Opcional: history.push('/admin/empresas'); para redirigir
+            }
+        } else {
+            setCurrentEmpresa(initialFormData);
+            setIsEditing(false);
+        }
+    }, [id, empresas]);
+    */
+
     const handleInputChange = (key: keyof Omit<Empresa, "id">, value: string | null | undefined) => {
-        setFormData((prevData) => ({ ...prevData, [key]: value || "" }));
+        setCurrentEmpresa((prevData) => ({ ...prevData, [key]: value || "" }));
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsLoading(true);
         try {
-            await createEmpresa(formData);
-            setFormData({
-                nombre: "",
-                direccion: "",
-                categoria: "",
-                whatsapp: "",
-                instagram: "",
-            });
-            await cargarEmpresas();
-            setSuccessMessage("Empresa creada exitosamente.");
+            if (isEditing && 'id' in currentEmpresa && currentEmpresa.id) {
+                await updateEmpresa(currentEmpresa.id, currentEmpresa as Empresa);
+                setSuccessMessage("Empresa actualizada exitosamente.");
+            } else {
+                await createEmpresa(currentEmpresa as Omit<Empresa, "id">);
+                setSuccessMessage("Empresa creada exitosamente.");
+            }
+            
+            // Reiniciar el formulario después de la operación exitosa
+            setCurrentEmpresa(initialFormData); // Usa el estado inicial para reiniciar
+            setIsEditing(false); // Volver a modo creación
+            // Ya no es necesario cargarEmpresas aquí porque el contexto ya actualiza el estado local
+            // y si quieres forzar un refetch de la API, ya lo hace el useEffect inicial al montar
         } catch (error) {
-            console.error("Error al crear empresa:", error);
-            setErrorMessage("Error al crear empresa. Intente nuevamente.");
+            console.error(`Error al ${isEditing ? 'actualizar' : 'crear'} empresa:`, error);
+            setErrorMessage(`Error al ${isEditing ? 'actualizar' : 'crear'} empresa. Intente nuevamente.`);
         } finally {
             setIsLoading(false);
         }
     };
 
-    const iniciarEdicion = (empresa: Empresa) => {
-        setEditandoId(empresa.id);
-        setEmpresaEditando({ ...empresa });
+    // Nueva función para manejar el clic en "Editar" desde la lista
+    const iniciarEdicionDesdeLista = (empresa: Empresa) => {
+        setCurrentEmpresa(empresa); // Carga los datos de la empresa seleccionada
+        setIsEditing(true);         // Activa el modo edición
+        // Opcional: Desplazar la vista hacia el formulario de edición si está muy abajo
+        // document.getElementById('top-form-card')?.scrollIntoView({ behavior: 'smooth' });
     };
 
     const cancelarEdicion = () => {
-        setEditandoId("");
-        setEmpresaEditando(null);
+        setCurrentEmpresa(initialFormData); // Reinicia el formulario
+        setIsEditing(false);               // Sale del modo edición
     };
 
-    const handleEditInputChange = (key: keyof Empresa, value: string | null | undefined) => {
-        setEmpresaEditando((prevEmpresa) => {
-            if (prevEmpresa) {
-                return { ...prevEmpresa, [key]: value || "" };
-            }
-            return prevEmpresa;
-        });
-    };
-
-    const guardarEdicion = async () => {
-        if (empresaEditando && editandoId) {
-            setIsLoading(true);
-            try {
-                await updateEmpresa(editandoId, empresaEditando);
-                await cargarEmpresas();
-                cancelarEdicion();
-                setSuccessMessage("Empresa actualizada exitosamente.");
-            } catch (error) {
-                console.error("Error al actualizar empresa:", error);
-                setErrorMessage("Error al actualizar empresa. Intente nuevamente.");
-            } finally {
-                setIsLoading(false);
-            }
-        }
-    };
-
-    const handleDelete = async (id: string) => {
+    const handleDelete = async (idToDelete: string) => {
         presentAlert({
             header: 'Confirmar Eliminación',
             message: '¿Estás seguro de que quieres eliminar esta empresa?',
@@ -141,9 +149,14 @@ const EmpresasForm: React.FC = () => {
                     handler: async () => {
                         setIsLoading(true);
                         try {
-                            await deleteEmpresa(id);
-                            await cargarEmpresas();
+                            await deleteEmpresa(idToDelete);
+                            // La lista se actualizará automáticamente gracias al contexto
                             setSuccessMessage("Empresa eliminada exitosamente.");
+                            // Si se eliminó la empresa que se estaba editando, resetear el formulario
+                            if (isEditing && 'id' in currentEmpresa && currentEmpresa.id === idToDelete) {
+                                setCurrentEmpresa(initialFormData);
+                                setIsEditing(false);
+                            }
                         } catch (error) {
                             console.error("Error al eliminar empresa:", error);
                             setErrorMessage("Error al eliminar empresa. Intente nuevamente.");
@@ -161,14 +174,13 @@ const EmpresasForm: React.FC = () => {
             <IonHeader>
                 <IonToolbar>
                     <IonTitle>Gestión de Empresas</IonTitle>
-                    {/* El botón de tema ha sido eliminado de aquí, ya que el tema es automático */}
                 </IonToolbar>
             </IonHeader>
             <IonContent className="ion-padding">
-                {/* Formulario de Creación */}
-                <IonCard>
+                {/* Formulario de Creación/Edición */}
+                <IonCard id="top-form-card"> {/* Agregamos un ID si quieres hacer scroll */}
                     <IonCardHeader>
-                        <h2>Crear Nueva Empresa</h2>
+                        <h2>{isEditing ? "Editar Empresa" : "Crear Nueva Empresa"}</h2>
                     </IonCardHeader>
                     <IonCardContent>
                         <form onSubmit={handleSubmit}>
@@ -176,7 +188,7 @@ const EmpresasForm: React.FC = () => {
                                 <IonInput
                                     label="Nombre"
                                     labelPlacement="floating"
-                                    value={formData.nombre}
+                                    value={currentEmpresa.nombre}
                                     onIonChange={(e) => handleInputChange("nombre", e.detail.value)}
                                     maxlength={50}
                                     required
@@ -186,7 +198,7 @@ const EmpresasForm: React.FC = () => {
                                 <IonInput
                                     label="Dirección"
                                     labelPlacement="floating"
-                                    value={formData.direccion}
+                                    value={currentEmpresa.direccion}
                                     onIonChange={(e) => handleInputChange("direccion", e.detail.value)}
                                     maxlength={100}
                                     required
@@ -196,7 +208,7 @@ const EmpresasForm: React.FC = () => {
                                 <IonInput
                                     label="Categoría"
                                     labelPlacement="floating"
-                                    value={formData.categoria}
+                                    value={currentEmpresa.categoria}
                                     onIonChange={(e) => handleInputChange("categoria", e.detail.value)}
                                     maxlength={50}
                                     required
@@ -207,7 +219,7 @@ const EmpresasForm: React.FC = () => {
                                     label="WhatsApp"
                                     labelPlacement="floating"
                                     type="tel"
-                                    value={formData.whatsapp}
+                                    value={currentEmpresa.whatsapp}
                                     onIonChange={(e) => handleInputChange("whatsapp", e.detail.value)}
                                     maxlength={15}
                                     required
@@ -217,16 +229,22 @@ const EmpresasForm: React.FC = () => {
                                 <IonInput
                                     label="Instagram"
                                     labelPlacement="floating"
-                                    value={formData.instagram}
+                                    value={currentEmpresa.instagram}
                                     onIonChange={(e) => handleInputChange("instagram", e.detail.value)}
                                     maxlength={50}
                                     required
                                 ></IonInput>
                             </IonItem>
                             <IonButton type="submit" expand="block" color="primary" className="ion-margin-top">
-                                <IonIcon slot="start" icon={create} />
-                                Crear Empresa
+                                <IonIcon slot="start" icon={isEditing ? save : create} />
+                                {isEditing ? "Guardar Cambios" : "Crear Empresa"}
                             </IonButton>
+                            {isEditing && (
+                                <IonButton onClick={cancelarEdicion} expand="block" color="medium" className="ion-margin-top">
+                                    <IonIcon slot="start" icon={close} />
+                                    Cancelar Edición
+                                </IonButton>
+                            )}
                         </form>
                     </IonCardContent>
                 </IonCard>
@@ -242,96 +260,33 @@ const EmpresasForm: React.FC = () => {
                         {empresas.map((empresa: Empresa) => (
                             <IonCol size="12" sizeMd="6" key={empresa.id}>
                                 <IonCard>
-                                    {editandoId === empresa.id ? (
-                                        <IonCardContent>
-                                            <h3>Editando {empresa.nombre}</h3>
-                                            <IonItem>
-                                                <IonInput
-                                                    label="Nombre"
-                                                    labelPlacement="floating"
-                                                    value={empresaEditando?.nombre || ''}
-                                                    onIonChange={(e) => handleEditInputChange("nombre", e.detail.value)}
-                                                    maxlength={50}
-                                                    required
-                                                ></IonInput>
-                                            </IonItem>
-                                            <IonItem>
-                                                <IonInput
-                                                    label="Dirección"
-                                                    labelPlacement="floating"
-                                                    value={empresaEditando?.direccion || ''}
-                                                    onIonChange={(e) => handleEditInputChange("direccion", e.detail.value)}
-                                                    maxlength={100}
-                                                    required
-                                                ></IonInput>
-                                            </IonItem>
-                                            <IonItem>
-                                                <IonInput
-                                                    label="Categoría"
-                                                    labelPlacement="floating"
-                                                    value={empresaEditando?.categoria || ''}
-                                                    onIonChange={(e) => handleEditInputChange("categoria", e.detail.value)}
-                                                    maxlength={50}
-                                                    required
-                                                ></IonInput>
-                                            </IonItem>
-                                            <IonItem>
-                                                <IonInput
-                                                    label="WhatsApp"
-                                                    labelPlacement="floating"
-                                                    type="tel"
-                                                    value={empresaEditando?.whatsapp || ''}
-                                                    onIonChange={(e) => handleEditInputChange("whatsapp", e.detail.value)}
-                                                    maxlength={15}
-                                                    required
-                                                ></IonInput>
-                                            </IonItem>
-                                            <IonItem>
-                                                <IonInput
-                                                    label="Instagram"
-                                                    labelPlacement="floating"
-                                                    value={empresaEditando?.instagram || ''}
-                                                    onIonChange={(e) => handleEditInputChange("instagram", e.detail.value)}
-                                                    maxlength={50}
-                                                    required
-                                                ></IonInput>
-                                            </IonItem>
-                                            <IonButton onClick={guardarEdicion} expand="block" color="primary" className="ion-margin-top">
-                                                <IonIcon slot="start" icon={save} />
-                                                Guardar Cambios
-                                            </IonButton>
-                                            <IonButton onClick={cancelarEdicion} expand="block" color="medium" className="ion-margin-top">
-                                                <IonIcon slot="start" icon={close} />
-                                                Cancelar
-                                            </IonButton>
-                                        </IonCardContent>
-                                    ) : (
-                                        <IonCardContent>
-                                            <IonCardHeader className="ion-no-padding">
-                                                <h2>{empresa.nombre}</h2>
-                                            </IonCardHeader>
-                                            <p>
-                                                <strong>Dirección:</strong> {empresa.direccion}
-                                            </p>
-                                            <p>
-                                                <strong>Categoría:</strong> {empresa.categoria}
-                                            </p>
-                                            <p>
-                                                <strong>WhatsApp:</strong> {empresa.whatsapp}
-                                            </p>
-                                            <p>
-                                                <strong>Instagram:</strong> {empresa.instagram}
-                                            </p>
-                                            <IonButton onClick={() => iniciarEdicion(empresa)} expand="block" className="ion-margin-top">
-                                                <IonIcon slot="start" icon={create} />
-                                                Editar
-                                            </IonButton>
-                                            <IonButton onClick={() => handleDelete(empresa.id)} expand="block" color="danger" className="ion-margin-top">
-                                                <IonIcon slot="start" icon={trash} />
-                                                Eliminar
-                                            </IonButton>
-                                        </IonCardContent>
-                                    )}
+                                    <IonCardContent>
+                                        <h3><strong>Nombre:</strong> {empresa.nombre}</h3>
+                                        <p><strong>Dirección:</strong> {empresa.direccion}</p>
+                                        <p><strong>Categoría:</strong> {empresa.categoria}</p>
+                                        <p><strong>WhatsApp:</strong> {empresa.whatsapp}</p>
+                                        <p><strong>Instagram:</strong> {empresa.instagram}</p>
+                                        
+                                        {/* EL BOTÓN DE EDITAR AHORA LLAMA A LA FUNCIÓN CORRECTA */}
+                                        <IonButton 
+                                            onClick={() => iniciarEdicionDesdeLista(empresa)} 
+                                            expand="block" 
+                                            className="ion-margin-top"
+                                        >
+                                            <IonIcon slot="start" icon={create} />
+                                            Editar
+                                        </IonButton>
+                                        
+                                        <IonButton 
+                                            onClick={() => handleDelete(empresa.id)} 
+                                            expand="block" 
+                                            color="danger" 
+                                            className="ion-margin-top"
+                                        >
+                                            <IonIcon slot="start" icon={trash} />
+                                            Eliminar
+                                        </IonButton>
+                                    </IonCardContent>
                                 </IonCard>
                             </IonCol>
                         ))}
