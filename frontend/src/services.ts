@@ -1,35 +1,41 @@
-import { Empresa } from "./types";
+// frontend/src/services/services.ts
 
+import { Empresa } from "./types"; // Asegúrate de que la ruta sea correcta según donde esté este archivo
+
+// Define la URL base de tu API. Si tu backend está en el mismo VPS y el frontend
+// lo sirve un proxy (como Nginx) que redirige /api, esta URL relativa está bien.
+// Si no, deberías poner la IP o dominio completo de tu backend aquí (ej. 'http://tu_ip_backend:4000/api/empresas')
 const API_URL = "/api/empresas";
 
+// --- FUNCIONES DE SERVICIO REFRACTORIZADAS ---
+// Todas las funciones ahora SÓLO hacen la llamada a la API y devuelven los datos o el resultado.
+// Ya NO reciben ni actualizan 'setEmpresas' u otros estados de React.
+
 // Obtener la lista de empresas
-export const fetchEmpresas = async (
-    setEmpresas: (empresas: Empresa[]) => void
-) => {
+export const fetchEmpresasApi = async (): Promise<Empresa[]> => {
     try {
         const response = await fetch(API_URL);
         if (!response.ok) {
-            throw new Error(`Error fetching empresas: ${response.statusText}`);
+            // Intenta obtener un mensaje de error más detallado del servidor
+            const errorBody = await response.text();
+            throw new Error(`Error al obtener empresas: ${response.status} - ${errorBody}`);
         }
         const data: Empresa[] = await response.json();
-        setEmpresas(data);
+        return data; // Devuelve los datos directamente
     } catch (error) {
-        console.error("Error fetching empresas:", error);
+        console.error("Error en fetchEmpresasApi:", error);
+        throw error; // Propaga el error para que el Contexto (o quien llame) lo maneje
     }
 };
 
 // Crear una nueva empresa
-export const createEmpresa = async (
-    empresa: Omit<Empresa, "id">, // Corregido
-    setEmpresas: (empresas: Empresa[] | ((prev: Empresa[]) => Empresa[])) => void
-): Promise<void> => { // Corregido
-    // Validación básica del frontend
+export const createEmpresaApi = async (empresa: Omit<Empresa, "id">): Promise<Empresa> => {
+    // Puedes mantener validaciones básicas aquí o moverlas al Contexto/Componente
     if (!empresa.nombre || empresa.nombre.trim().length === 0) {
-        throw new Error("El nombre es requerido");
+        throw new Error("El nombre de la empresa es requerido para crear.");
     }
-
     if (!empresa.categoria || empresa.categoria.trim().length === 0) {
-        throw new Error("La categoría es requerida");
+        throw new Error("La categoría de la empresa es requerida para crear.");
     }
 
     try {
@@ -42,34 +48,20 @@ export const createEmpresa = async (
         });
 
         if (!response.ok) {
-            // Intenta obtener el mensaje de error del servidor
-            let errorMessage = response.statusText;
-            try {
-                const errorData = await response.json();
-                errorMessage = errorData.message || errorMessage;
-            } catch (e) {
-                console.warn("No se pudo parsear el error del servidor");
-            }
-            throw new Error(errorMessage);
+            const errorBody = await response.text();
+            throw new Error(`Error al crear empresa: ${response.status} - ${errorBody}`);
         }
 
         const data: Empresa = await response.json();
-
-        // Actualización segura del estado
-        setEmpresas((prev: Empresa[]) => [...prev, data]);
-
+        return data; // Devuelve la empresa creada
     } catch (error) {
-        console.error("Error creating empresa:", error);
-        throw error;
+        console.error("Error en createEmpresaApi:", error);
+        throw error; // Propaga el error
     }
 };
 
 // Actualizar una empresa existente
-export const updateEmpresa = async (
-    id: string,
-    empresa: Omit<Empresa, "id">, // Corregido
-    setEmpresas: (empresas: Empresa[] | ((prev: Empresa[]) => Empresa[])) => void
-) => {
+export const updateEmpresaApi = async (id: string, empresa: Omit<Empresa, "id">): Promise<Empresa> => {
     try {
         const response = await fetch(`${API_URL}/${id}`, {
             method: "PUT",
@@ -79,31 +71,28 @@ export const updateEmpresa = async (
             body: JSON.stringify(empresa),
         });
         if (!response.ok) {
-            throw new Error(`Error updating empresa: ${response.statusText}`);
+            const errorBody = await response.text();
+            throw new Error(`Error al actualizar empresa: ${response.status} - ${errorBody}`);
         }
         const data: Empresa = await response.json();
-        setEmpresas((prev: Empresa[]) =>
-            prev.map((e: Empresa) => (e.id === id ? data : e)) // Corregido
-        );
+        return data; // Devuelve la empresa actualizada
     } catch (error) {
-        console.error("Error updating empresa:", error);
+        console.error("Error en updateEmpresaApi:", error);
+        throw error; // Propaga el error
     }
 };
 
 // Eliminar una empresa existente
-export const deleteEmpresa = async (
-    id: string,
-    setEmpresas: (empresas: Empresa[] | ((prev: Empresa[]) => Empresa[])) => void
-) => {
+export const deleteEmpresaApi = async (id: string): Promise<void> => {
     try {
         const response = await fetch(`${API_URL}/${id}`, { method: "DELETE" });
         if (!response.ok) {
-            throw new Error(`Error deleting empresa: ${response.statusText}`);
+            const errorBody = await response.text();
+            throw new Error(`Error al eliminar empresa: ${response.status} - ${errorBody}`);
         }
-        setEmpresas((prev: Empresa[]) =>
-            prev.filter((e: Empresa) => e.id !== id) // Corregido
-        );
+        // Si la operación fue exitosa, no devuelve datos, solo se completa la promesa.
     } catch (error) {
-        console.error("Error deleting empresa:", error);
+    console.error("Error en deleteEmpresaApi:", error);
+        throw error; // Propaga el error
     }
 };

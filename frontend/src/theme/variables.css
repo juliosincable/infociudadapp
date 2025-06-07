@@ -1,2 +1,95 @@
-/* For information on how to create your own theme, please see:
-http://ionicframework.com/docs/theming/ */
+/* src/theme/variables.css */
+
+/* --- Variables por defecto (tema claro) --- */
+:root {
+  /** Ionic tertiary color **/
+  --ion-color-tertiary: #D500F9; /* Magenta Brillante */
+  --ion-color-tertiary-rgb: 213, 0, 249;
+  --ion-color-tertiary-contrast: #ffffff;
+  --ion-color-tertiary-contrast-rgb: 255, 255, 255;
+  --ion-color-tertiary-shade: #be00dd;
+  --ion-color-tertiary-tint: #df1aff;
+
+  /* Tus variables personalizadas para el fondo de la app - TEMA CLARO */
+  --app-color-background: #F8F9FA; /* Un gris muy claro */
+  --app-gradient-bg: linear-gradient(to bottom, #F8F9FA, #F2F4F6);
+
+  /* --- Aplicar el fondo a los elementos principales en el tema claro --- */
+  /* Forzamos el fondo en el body, ion-app, ion-content y main */
+  --ion-background-color: var(--app-color-background); /* Para el body y el sistema Ionic */
+  background: var(--app-gradient-bg); /* Para el body */
+}
+
+/* Aplicar el fondo a elementos específicos (se heredarán de :root o body) */
+ion-app {
+  --ion-background-color: var(--app-color-background);
+  background: var(--app-gradient-bg);
+}
+
+ion-content {
+  --background: var(--app-gradient-bg); /* Propiedad específica de IonContent */
+  background: var(--app-gradient-bg);
+}
+
+main {
+  /* El elemento <main> que identificaste con el turquesa */
+  --ion-background-color: var(--app-color-background);
+  background: var(--app-gradient-bg);
+}
+
+/* --- Variables para el Tema Oscuro --- */
+body[data-theme="dark"] {
+  /* Asegúrate de que tus variables de color para el modo oscuro están aquí */
+  --ion-color-tertiary: #D500F9; /* Tu magenta para modo oscuro (si es diferente, cámbialo) */
+  --ion-color-tertiary-rgb: 213, 0, 249;
+  --ion-color-tertiary-contrast: #ffffff;
+  --ion-color-tertiary-contrast-rgb: 255, 255, 255;
+  --ion-color-tertiary-shade: #be00dd;
+  --ion-color-tertiary-tint: #df1aff;
+
+  /* Tus variables personalizadas para el fondo de la app - TEMA OSCURO */
+  --app-color-background: #1C1C1C; /* Un gris oscuro */
+  --app-gradient-bg: linear-gradient(to bottom, #1C1C1C, #282828);
+}
+
+/* --- Aplicar el fondo a los elementos principales en el tema oscuro --- */
+body[data-theme="dark"] body,
+body[data-theme="dark"] ion-app,
+body[data-theme="dark"] ion-content,
+body[data-theme="dark"] main {
+  --ion-background-color: var(--app-color-background);
+  background: var(--app-gradient-bg);
+}
+
+/* --- OTRAS REGLAS PARA COMPONENTES ESPECÍFICOS QUE USEN TERTIARY --- */
+/* Estas son las reglas que aseguran que botones, toolbars, etc., usen tu magenta */
+ion-button[color="tertiary"] {
+  --background: var(--ion-color-tertiary);
+  --color: var(--ion-color-tertiary-contrast);
+}
+
+ion-toolbar[color="tertiary"] {
+  --background: var(--ion-color-tertiary);
+  --color: var(--ion-color-tertiary-contrast);
+}
+
+ion-icon[color="tertiary"] {
+  color: var(--ion-color-tertiary);
+  fill: var(--ion-color-tertiary);
+}
+
+/* Versiones para el modo oscuro */
+body[data-theme="dark"] ion-button[color="tertiary"] {
+  --background: var(--ion-color-tertiary);
+  --color: var(--ion-color-tertiary-contrast);
+}
+
+body[data-theme="dark"] ion-toolbar[color="tertiary"] {
+  --background: var(--ion-color-tertiary);
+  --color: var(--ion-color-tertiary-contrast);
+}
+
+body[data-theme="dark"] ion-icon[color="tertiary"] {
+  color: var(--ion-color-tertiary);
+  fill: var(--ion-color-tertiary);
+}
