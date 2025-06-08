@@ -1,5 +1,4 @@
-import * as React from "react";
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react"; // Aquí hemos cambiado 'import * as React' por 'import React'
 import {
     IonContent,
     IonHeader,
@@ -25,25 +24,22 @@ import { useTheme } from "../theme/ThemeContext";
 import { Empresa } from "../types"; // Asegúrate de que esta ruta sea correcta
 
 const EmpresasList: React.FC = () => {
-    const { empresas, fetchEmpresas, isLoading: contextLoading, error: contextError, clearError } = useEmpresas(); // Añadido clearError
+    const { empresas, fetchEmpresas, isLoading: contextLoading, error: contextError, clearError } = useEmpresas();
     const { theme } = useTheme();
     const [searchTerm, setSearchTerm] = useState("");
     const [selectedEmpresa, setSelectedEmpresa] = useState<Empresa | null>(null);
 
     useEffect(() => {
         fetchEmpresas();
-        // Opcional: Si quieres que los detalles se cierren cada vez que se recarga la lista
-        // setSelectedEmpresa(null); 
     }, [fetchEmpresas]);
 
     const handleSearchChange = (e: CustomEvent<InputChangeEventDetail>) => {
         setSearchTerm(e.detail.value ? String(e.detail.value) : "");
-        setSelectedEmpresa(null); // Cuando se busca, reinicia la empresa seleccionada
+        setSelectedEmpresa(null);
     };
 
     const handleShowDetails = (empresa: Empresa) => {
         setSelectedEmpresa(empresa);
-        // Punto de depuración: Imprime la empresa seleccionada para verificar sus campos
         console.log("Empresa seleccionada para detalles:", empresa);
     };
 
@@ -53,7 +49,6 @@ const EmpresasList: React.FC = () => {
 
     const filteredEmpresas = empresas.filter((empresa) =>
         empresa.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        // MODIFICACIÓN: Comprobación de existencia para campos opcionales
         (empresa.categoria && empresa.categoria.toLowerCase().includes(searchTerm.toLowerCase())) ||
         (empresa.descripcion && empresa.descripcion.toLowerCase().includes(searchTerm.toLowerCase())) ||
         (empresa.telefono && empresa.telefono.includes(searchTerm))
@@ -83,20 +78,16 @@ const EmpresasList: React.FC = () => {
                     <IonIcon slot="end" icon={search} />
                 </IonItem>
 
-                {/* SECCIÓN DE DETALLES DE EMPRESA SELECCIONADA */}
                 {selectedEmpresa && (
                     <IonCard className="ion-margin-top">
                         <IonCardHeader>
                             <h2>Detalles de: <strong>{selectedEmpresa.nombre}</strong></h2>
                         </IonCardHeader>
                         <IonCardContent>
-                            {/* Mostrar todos los campos, incluso si son opcionales, para que se vea el título del campo */}
                             <p><strong>Dirección:</strong> {selectedEmpresa.direccion || 'N/A'}</p>
                             <p><strong>Categoría:</strong> {selectedEmpresa.categoria || 'N/A'}</p>
                             <p><strong>WhatsApp:</strong> {selectedEmpresa.whatsapp || 'N/A'}</p>
                             <p><strong>Instagram:</strong> {selectedEmpresa.instagram || 'N/A'}</p>
-
-                            {/* CAMPOS ADICIONALES: Ahora se muestran incluso si están vacíos, con 'N/A' */}
                             <p><strong>Descripción:</strong> {selectedEmpresa.descripcion || 'N/A'}</p>
                             <p><strong>Teléfono:</strong> {selectedEmpresa.telefono || 'N/A'}</p>
                             <p><strong>Email:</strong> {selectedEmpresa.email || 'N/A'}</p>
@@ -128,7 +119,6 @@ const EmpresasList: React.FC = () => {
                         filteredEmpresas.map((empresa) => (
                             <IonItem key={empresa.id} button onClick={() => handleShowDetails(empresa)}>
                                 <IonLabel>
-                                    {/* SOLO EL NOMBRE EN LA LISTA */}
                                     <h2>{empresa.nombre}</h2>
                                 </IonLabel>
                             </IonItem>
@@ -145,7 +135,7 @@ const EmpresasList: React.FC = () => {
                     isOpen={!!contextError}
                     message={contextError || ""}
                     duration={3000}
-                    onDidDismiss={clearError} // Ahora usa la función clearError del contexto
+                    onDidDismiss={clearError}
                     color="danger"
                 />
             </IonContent>
