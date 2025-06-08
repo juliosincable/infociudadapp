@@ -12,7 +12,8 @@ COPY package*.json ./
 
 # Instala TODAS las dependencias.
 # Necesitamos las dependencias de desarrollo (como 'typescript', 'vite') para el paso de 'build'.
-RUN npm install
+# ¡CAMBIO CLAVE AQUÍ!
+RUN npm install --legacy-peer-deps
 
 # Copia todo el código fuente de tu aplicación al contenedor.
 COPY . .

@@ -1,8 +1,6 @@
-import * as React from "react";
-import { useState, useEffect, useCallback } from "react";
-// Si estás usando `useParams` para obtener el ID de la URL, descoméntalo:
-// import { useParams } from "react-router-dom";
+// frontend/src/pages/EmpresasForm.tsx
 
+import React, { useState, useEffect } from "react";
 import {
     IonContent,
     IonHeader,
@@ -11,443 +9,361 @@ import {
     IonToolbar,
     IonInput,
     IonItem,
+    IonLabel,
     IonButton,
-    IonGrid,
-    IonRow,
-    IonCol,
-    IonCard,
-    IonCardHeader,
-    IonCardContent,
-    IonIcon,
+    IonList,
+    IonTextarea,
+    // Eliminamos IonFab, IonFabButton, IonSelect, IonSelectOption
+    IonIcon, // IonIcon sí se usa (en los botones de guardar, eliminar, etc.)
     IonLoading,
     IonToast,
-    useIonAlert,
-    IonLabel,
-    IonTextarea,
-    InputChangeEventDetail, // Para el tipado de onIonChange
+    InputChangeEventDetail
 } from "@ionic/react";
-import { create, save, close, trash } from "ionicons/icons";
+import { save, arrowBack, trash } from "ionicons/icons";
+import { useParams, useHistory } from "react-router-dom";
 import { useEmpresas } from "../EmpresasContext";
-import { useTheme } from "../theme/ThemeContext";
 import { Empresa } from "../types";
 
 const EmpresasForm: React.FC = () => {
-    // Si usas useParams, descomenta la siguiente línea y ajusta el tipo si es necesario
-    // const { id } = useParams<{ id?: string }>(); // Captura el ID de la URL para edición
+    const { id } = useParams<{ id?: string }>();
+    const history = useHistory();
+    const { 
+        empresas, 
+        createEmpresa, 
+        updateEmpresa, 
+        deleteEmpresa, 
+        isLoading, 
+        error, 
+        clearError,
+    } = useEmpresas();
 
-    const { empresas, fetchEmpresas, updateEmpresa, createEmpresa, deleteEmpresa, isLoading: contextLoading, error: contextError } = useEmpresas();
-    const { theme } = useTheme();
+    const [nombre, setNombre] = useState("");
+    const [direccion, setDireccion] = useState("");
+    const [telefono, setTelefono] = useState("");
+    const [email, setEmail] = useState("");
+    const [logoUrl, setLogoUrl] = useState("");
+    const [horarioAtencion, setHorarioAtencion] = useState("");
+    const [sitioWeb, setSitioWeb] = useState("");
+    const [categoria, setCategoria] = useState("");
+    const [descripcion, setDescripcion] = useState("");
+    const [whatsapp, setWhatsapp] = useState("");
+    const [instagram, setInstagram] = useState("");
+    const [tiktok, setTiktok] = useState("");
+    const [servicios, setServicios] = useState<string[]>([]);
+    const [latitud, setLatitud] = useState<number>(0);
+    const [longitud, setLongitud] = useState<number>(0);
+    const [showLoading, setShowLoading] = useState(false);
+    const [showToast, setShowToast] = useState(false);
+    const [toastMessage, setToastMessage] = useState("");
+    const [isEditMode, setIsEditMode] = useState(false);
 
-    // MODIFICADO: initialFormData DEBE INCLUIR TODOS LOS CAMPOS DE Empresa
-    // e inicializar ubicacionGps como un objeto
-    const initialFormData: Omit<Empresa, "id"> = {
-        nombre: "",
-        direccion: "",
-        categoria: "",
-        whatsapp: "",
-        instagram: "",
-        descripcion: "",
-        telefono: "",
-        email: "",
-        logoUrl: "",
-        horarioAtencion: "",
-        sitioWeb: "",
-        servicios: [], // Array vacío
-        ubicacionGps: { lat: 0, lng: 0 }, // Inicializar con valores numéricos por defecto
-        tiktok: "",
-    };
-
-    const [currentEmpresa, setCurrentEmpresa] = useState<Empresa | Omit<Empresa, "id">>(initialFormData);
-    const [isEditing, setIsEditing] = useState(false);
-    
-    // Estados para mensajes de feedback
-    const [errorMessage, setErrorMessage] = useState<string | null>(null);
-    const [successMessage, setSuccessMessage] = useState<string | null>(null);
-
-    const [presentAlert] = useIonAlert();
-
-    // Este useEffect es para cargar los datos si estás en modo edición (por URL)
-    // Si tu formulario está en una página sin ID en la URL para crear, y la edición se hace desde una lista que le pasa el objeto,
-    // este useEffect puede ser reemplazado por la función `iniciarEdicionDesdeLista` o similar.
-    // He asumido que puedes pasar un ID por URL para la edición.
     useEffect(() => {
-        // Simulación de carga de empresa para edición si `id` existe
-        // Si el `id` viene de `useParams()`, descomenta la línea de `useParams` arriba.
-        // if (id) {
-        //     const empresaToEdit = empresas.find(emp => emp.id === id);
-        //     if (empresaToEdit) {
-        //         setCurrentEmpresa(empresaToEdit);
-        //         setIsEditing(true);
-        //     } else {
-        //         setErrorMessage("Empresa no encontrada para edición.");
-        //         // Opcional: history.push('/admin/empresas'); para redirigir si no se encuentra
-        //     }
-        // } else {
-            setCurrentEmpresa(initialFormData);
-            setIsEditing(false);
-        // }
-    }, [/* id, */ empresas]); // Añade `id` si lo usas con useParams
-
-    // MODIFICADO: handleInputChange debe manejar todos los tipos de campos
-    const handleInputChange = (key: keyof Empresa, value: string | string[] | { lat: number; lng: number; } | null | undefined) => {
-        setCurrentEmpresa((prevData) => {
-            // Manejo especial para 'servicios' que es un array de strings
-            if (key === 'servicios') {
-                const serviciosArray = typeof value === 'string' ? value.split(',').map(s => s.trim()).filter(s => s !== '') : [];
-                return { ...prevData, [key]: serviciosArray };
+        if (id) {
+            setIsEditMode(true);
+            const empresaToEdit = empresas.find((emp) => emp.id === id);
+            if (empresaToEdit) {
+                setNombre(empresaToEdit.nombre);
+                setDireccion(empresaToEdit.direccion || "");
+                setTelefono(empresaToEdit.telefono || "");
+                setEmail(empresaToEdit.email || "");
+                setLogoUrl(empresaToEdit.logoUrl || "");
+                setHorarioAtencion(empresaToEdit.horarioAtencion || "");
+                setSitioWeb(empresaToEdit.sitioWeb || "");
+                setCategoria(empresaToEdit.categoria || "");
+                setDescripcion(empresaToEdit.descripcion || "");
+                setWhatsapp(empresaToEdit.whatsapp || "");
+                setInstagram(empresaToEdit.instagram || "");
+                setTiktok(empresaToEdit.tiktok || "");
+                setServicios(empresaToEdit.servicios || []);
+                setLatitud(empresaToEdit.ubicacionGps?.lat || 0);
+                setLongitud(empresaToEdit.ubicacionGps?.lng || 0);
+            } else {
+                setToastMessage("Empresa no encontrada.");
+                setShowToast(true);
+                history.replace("/empresasList");
             }
-            // Manejo especial para 'ubicacionGps'
-            if (key === 'ubicacionGps') {
-                return { ...prevData, [key]: value as { lat: number; lng: number; } };
-            }
-            // Para todos los demás campos (string o opcionales)
-            return { ...prevData, [key]: value || "" }; // Asegura que los campos opcionales sean "" si son null/undefined
-        });
-    };
+        } else {
+            setIsEditMode(false);
+            setNombre("");
+            setDireccion("");
+            setTelefono("");
+            setEmail("");
+            setLogoUrl("");
+            setHorarioAtencion("");
+            setSitioWeb("");
+            setCategoria("");
+            setDescripcion("");
+            setWhatsapp("");
+            setInstagram("");
+            setTiktok("");
+            setServicios([]);
+            setLatitud(0);
+            setLongitud(0);
+        }
+    }, [id, empresas, history]); 
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        // console.log("Datos del formulario a enviar:", currentEmpresa); // Depuración
+    useEffect(() => {
+        if (isLoading) {
+            setShowLoading(true);
+        } else {
+            setShowLoading(false);
+        }
+    }, [isLoading]);
 
-        // Pequeña validación antes de enviar
-        if (!currentEmpresa.nombre || !currentEmpresa.direccion || !currentEmpresa.categoria || !currentEmpresa.whatsapp || !currentEmpresa.instagram || !currentEmpresa.descripcion) {
-            setErrorMessage("Por favor, rellena todos los campos obligatorios.");
+    useEffect(() => {
+        if (error) {
+            setToastMessage(error);
+            setShowToast(true);
+            clearError();
+        }
+    }, [error, clearError]);
+
+    const handleSave = async () => {
+        if (!nombre) {
+            setToastMessage("El nombre de la empresa es obligatorio.");
+            setShowToast(true);
             return;
         }
 
         try {
-            if (isEditing && 'id' in currentEmpresa && currentEmpresa.id) {
-                await updateEmpresa(currentEmpresa.id, currentEmpresa as Empresa);
-                setSuccessMessage("Empresa actualizada exitosamente.");
+            if (isEditMode) {
+                const empresaToUpdate: Empresa = {
+                    id: id!, 
+                    nombre,
+                    direccion: direccion || "", 
+                    telefono: telefono || "",
+                    email: email || "",
+                    logoUrl: logoUrl || "",
+                    horarioAtencion: horarioAtencion || "",
+                    sitioWeb: sitioWeb || "",
+                    categoria: categoria || "",
+                    descripcion: descripcion || "",
+                    whatsapp: whatsapp || "",
+                    instagram: instagram || "",
+                    tiktok: tiktok || "",
+                    servicios: servicios.length > 0 ? servicios : [], 
+                    ubicacionGps: (latitud !== 0 || longitud !== 0) ? { lat: latitud, lng: longitud } : undefined,
+                };
+                await updateEmpresa(id!, empresaToUpdate); 
+                setToastMessage("Empresa actualizada con éxito.");
             } else {
-                await createEmpresa(currentEmpresa as Omit<Empresa, "id">);
-                setSuccessMessage("Empresa creada exitosamente.");
+                const newEmpresaData = {
+                    nombre,
+                    direccion: direccion || undefined, 
+                    telefono: telefono || undefined,
+                    email: email || undefined,
+                    logoUrl: logoUrl || undefined,
+                    horarioAtencion: horarioAtencion || undefined,
+                    sitioWeb: sitioWeb || undefined,
+                    categoria: categoria || undefined,
+                    descripcion: descripcion || undefined,
+                    whatsapp: whatsapp || undefined,
+                    instagram: instagram || undefined,
+                    tiktok: tiktok || undefined,
+                    servicios: servicios.length > 0 ? servicios : undefined,
+                    ubicacionGps: (latitud !== 0 || longitud !== 0) ? { lat: latitud, lng: longitud } : undefined,
+                };
+                await createEmpresa(newEmpresaData); 
+                setToastMessage("Empresa agregada con éxito.");
+                setNombre("");
+                setDireccion("");
+                setTelefono("");
+                setEmail("");
+                setLogoUrl("");
+                setHorarioAtencion("");
+                setSitioWeb("");
+                setCategoria("");
+                setDescripcion("");
+                setWhatsapp("");
+                setInstagram("");
+                setTiktok("");
+                setServicios([]);
+                setLatitud(0);
+                setLongitud(0);
             }
-            
-            // Reiniciar el formulario después de la operación exitosa
-            setCurrentEmpresa(initialFormData); // Usa el estado inicial para reiniciar
-            setIsEditing(false); // Volver a modo creación
-            // Opcional: recargar la lista de empresas si no se actualiza automáticamente
-            // fetchEmpresas(); 
-        } catch (error) {
-            console.error(`Error al ${isEditing ? 'actualizar' : 'crear'} empresa:`, error);
-            setErrorMessage(`Error al ${isEditing ? 'actualizar' : 'crear'} empresa. Intente nuevamente.`);
+            setShowToast(true);
+            history.goBack(); 
+        } catch (e) {
+            console.error("Error en handleSave:", e);
         }
     };
 
-    // Nueva función para manejar el clic en "Editar" desde la lista (si el formulario está en la misma página)
-    // Si usas un router para navegar con ID, esta función no es estrictamente necesaria aquí.
-    const iniciarEdicionDesdeLista = (empresa: Empresa) => {
-        setCurrentEmpresa(empresa); // Carga los datos de la empresa seleccionada
-        setIsEditing(true);         // Activa el modo edición
+    const handleDelete = async () => {
+        if (id) {
+            try {
+                await deleteEmpresa(id);
+                setToastMessage("Empresa eliminada con éxito.");
+                setShowToast(true);
+                history.goBack(); 
+            } catch (e) {
+                console.error("Error en handleDelete:", e);
+            }
+        }
     };
 
-    const cancelarEdicion = () => {
-        setCurrentEmpresa(initialFormData); // Reinicia el formulario
-        setIsEditing(false);                // Sale del modo edición
-    };
-
-    const handleDelete = async (idToDelete: string) => {
-        presentAlert({
-            header: 'Confirmar Eliminación',
-            message: '¿Estás seguro de que quieres eliminar esta empresa?',
-            buttons: [
-                {
-                    text: 'Cancelar',
-                    role: 'cancel',
-                    cssClass: 'secondary',
-                },
-                {
-                    text: 'Eliminar',
-                    handler: async () => {
-                        try {
-                            await deleteEmpresa(idToDelete);
-                            setSuccessMessage("Empresa eliminada exitosamente.");
-                            if (isEditing && 'id' in currentEmpresa && currentEmpresa.id === idToDelete) {
-                                setCurrentEmpresa(initialFormData);
-                                setIsEditing(false);
-                            }
-                        } catch (error) {
-                            console.error("Error al eliminar empresa:", error);
-                            setErrorMessage("Error al eliminar empresa. Intente nuevamente.");
-                        }
-                    },
-                },
-            ],
-        });
+    const handleServiceChange = (e: CustomEvent<InputChangeEventDetail>) => {
+        const value = String(e.detail.value || '');
+        setServicios(value.split(',').map(s => s.trim()).filter(s => s.length > 0));
     };
 
     return (
         <IonPage>
             <IonHeader>
                 <IonToolbar>
-                    <IonTitle>Gestión de Empresas</IonTitle>
+                    <IonButton slot="start" onClick={() => history.goBack()}>
+                        <IonIcon icon={arrowBack} />
+                    </IonButton>
+                    <IonTitle>{isEditMode ? "Editar Empresa" : "Nueva Empresa"}</IonTitle>
+                    {isEditMode && (
+                        <IonButton slot="end" color="danger" onClick={handleDelete}>
+                            <IonIcon icon={trash} />
+                        </IonButton>
+                    )}
+                    <IonButton slot="end" onClick={handleSave}>
+                        <IonIcon icon={save} />
+                    </IonButton>
                 </IonToolbar>
             </IonHeader>
-            <IonContent className="ion-padding">
-                <IonCard id="top-form-card">
-                    <IonCardHeader>
-                        <h2>{isEditing ? "Editar Empresa" : "Crear Nueva Empresa"}</h2>
-                    </IonCardHeader>
-                    <IonCardContent>
-                        <form onSubmit={handleSubmit}>
-                            <IonItem>
-                                <IonInput
-                                    label="Nombre"
-                                    labelPlacement="floating"
-                                    value={currentEmpresa.nombre}
-                                    onIonChange={(e) => handleInputChange("nombre", e.detail.value)}
-                                    maxlength={50}
-                                    required
-                                ></IonInput>
-                            </IonItem>
-                            <IonItem>
-                                <IonInput
-                                    label="Dirección"
-                                    labelPlacement="floating"
-                                    value={currentEmpresa.direccion}
-                                    onIonChange={(e) => handleInputChange("direccion", e.detail.value)}
-                                    maxlength={100}
-                                    required
-                                ></IonInput>
-                            </IonItem>
-                            <IonItem>
-                                <IonInput
-                                    label="Categoría"
-                                    labelPlacement="floating"
-                                    value={currentEmpresa.categoria}
-                                    onIonChange={(e) => handleInputChange("categoria", e.detail.value)}
-                                    maxlength={50}
-                                    required
-                                ></IonInput>
-                            </IonItem>
-                            <IonItem>
-                                <IonInput
-                                    label="WhatsApp"
-                                    labelPlacement="floating"
-                                    type="tel"
-                                    value={currentEmpresa.whatsapp}
-                                    onIonChange={(e) => handleInputChange("whatsapp", e.detail.value)}
-                                    maxlength={15}
-                                    required
-                                ></IonInput>
-                            </IonItem>
-                            <IonItem>
-                                <IonInput
-                                    label="Instagram"
-                                    labelPlacement="floating"
-                                    value={currentEmpresa.instagram}
-                                    onIonChange={(e) => handleInputChange("instagram", e.detail.value)}
-                                    maxlength={50}
-                                    required
-                                ></IonInput>
-                            </IonItem>
+            <IonContent fullscreen className="ion-padding">
+                <IonList>
+                    <IonItem>
+                        <IonLabel position="floating">Nombre de la Empresa <span style={{color: 'red'}}>*</span></IonLabel>
+                        <IonInput
+                            value={nombre}
+                            onIonChange={(e) => setNombre(String(e.detail.value || ''))}
+                            required
+                            maxlength={100}
+                        />
+                    </IonItem>
+                    <IonItem>
+                        <IonLabel position="floating">Dirección</IonLabel>
+                        <IonInput
+                            value={direccion}
+                            onIonChange={(e) => setDireccion(String(e.detail.value || ''))}
+                            maxlength={200}
+                        />
+                    </IonItem>
+                    <IonItem>
+                        <IonLabel position="floating">Teléfono</IonLabel>
+                        <IonInput
+                            value={telefono}
+                            onIonChange={(e) => setTelefono(String(e.detail.value || ''))}
+                            type="tel"
+                            maxlength={20}
+                        />
+                    </IonItem>
+                    <IonItem>
+                        <IonLabel position="floating">Email</IonLabel>
+                        <IonInput
+                            value={email}
+                            onIonChange={(e) => setEmail(String(e.detail.value || ''))}
+                            type="email"
+                            maxlength={100}
+                        />
+                    </IonItem>
+                    <IonItem>
+                        <IonLabel position="floating">URL Logo</IonLabel>
+                        <IonInput
+                            value={logoUrl}
+                            onIonChange={(e) => setLogoUrl(String(e.detail.value || ''))}
+                            type="url"
+                            maxlength={255}
+                        />
+                    </IonItem>
+                    <IonItem>
+                        <IonLabel position="floating">Horario de Atención</IonLabel>
+                        <IonInput
+                            value={horarioAtencion}
+                            onIonChange={(e) => setHorarioAtencion(String(e.detail.value || ''))}
+                            maxlength={100}
+                        />
+                    </IonItem>
+                    <IonItem>
+                        <IonLabel position="floating">Sitio Web</IonLabel>
+                        <IonInput
+                            value={sitioWeb}
+                            onIonChange={(e) => setSitioWeb(String(e.detail.value || ''))}
+                            type="url"
+                            maxlength={255}
+                        />
+                    </IonItem>
+                    <IonItem>
+                        <IonLabel position="floating">Categoría</IonLabel>
+                        <IonInput
+                            value={categoria}
+                            onIonChange={(e) => setCategoria(String(e.detail.value || ''))}
+                            maxlength={50}
+                        />
+                    </IonItem>
+                    <IonItem>
+                        <IonLabel position="floating">Descripción</IonLabel>
+                        <IonTextarea
+                            value={descripcion}
+                            onIonChange={(e) => setDescripcion(String(e.detail.value || ''))}
+                            rows={3}
+                            maxlength={500}
+                        />
+                    </IonItem>
+                    <IonItem>
+                        <IonLabel position="floating">WhatsApp</IonLabel>
+                        <IonInput
+                            value={whatsapp}
+                            onIonChange={(e) => setWhatsapp(String(e.detail.value || ''))}
+                            type="tel"
+                            maxlength={20}
+                        />
+                    </IonItem>
+                    <IonItem>
+                        <IonLabel position="floating">Instagram (sin @)</IonLabel>
+                        <IonInput
+                            value={instagram}
+                            onIonChange={(e) => setInstagram(String(e.detail.value || ''))}
+                            maxlength={50}
+                        />
+                    </IonItem>
+                     <IonItem>
+                        <IonLabel position="floating">TikTok (sin @)</IonLabel>
+                        <IonInput
+                            value={tiktok}
+                            onIonChange={(e) => setTiktok(String(e.detail.value || ''))}
+                            maxlength={50}
+                        />
+                    </IonItem>
+                    <IonItem>
+                        <IonLabel position="floating">Servicios (separados por coma)</IonLabel>
+                        <IonInput
+                            value={servicios.join(', ')}
+                            onIonChange={handleServiceChange}
+                            maxlength={500}
+                        />
+                    </IonItem>
+                    <IonItem>
+                        <IonLabel position="floating">Latitud (GPS)</IonLabel>
+                        <IonInput
+                            value={latitud}
+                            onIonChange={(e) => setLatitud(parseFloat(String(e.detail.value || '0')) || 0)}
+                            type="number"
+                            step="any"
+                        />
+                    </IonItem>
+                    <IonItem>
+                        <IonLabel position="floating">Longitud (GPS)</IonLabel>
+                        <IonInput
+                            value={longitud}
+                            onIonChange={(e) => setLongitud(parseFloat(String(e.detail.value || '0')) || 0)}
+                            type="number"
+                            step="any"
+                        />
+                    </IonItem>
+                </IonList>
 
-                            {/* CAMPOS ADICIONALES PARA FORMULARIO */}
-                            <IonItem>
-                                <IonLabel position="floating">Descripción</IonLabel>
-                                <IonTextarea
-                                    value={currentEmpresa.descripcion}
-                                    onIonChange={(e) => handleInputChange("descripcion", e.detail.value)}
-                                    autoGrow={true}
-                                    rows={3} // Número de filas iniciales
-                                    required
-                                ></IonTextarea>
-                            </IonItem>
-
-                            <IonItem>
-                                <IonInput
-                                    label="Teléfono (Opcional)"
-                                    labelPlacement="floating"
-                                    type="tel"
-                                    value={currentEmpresa.telefono || ''}
-                                    onIonChange={(e) => handleInputChange("telefono", e.detail.value)}
-                                    maxlength={15}
-                                ></IonInput>
-                            </IonItem>
-
-                            <IonItem>
-                                <IonInput
-                                    label="Email (Opcional)"
-                                    labelPlacement="floating"
-                                    type="email"
-                                    value={currentEmpresa.email || ''}
-                                    onIonChange={(e) => handleInputChange("email", e.detail.value)}
-                                    maxlength={100}
-                                ></IonInput>
-                            </IonItem>
-                            
-                            <IonItem>
-                                <IonInput
-                                    label="URL del Logo (Opcional)"
-                                    labelPlacement="floating"
-                                    type="url" // Asegura que sea un URL válido
-                                    value={currentEmpresa.logoUrl || ''}
-                                    onIonChange={(e) => handleInputChange("logoUrl", e.detail.value)}
-                                    maxlength={255}
-                                ></IonInput>
-                            </IonItem>
-
-                            <IonItem>
-                                <IonInput
-                                    label="Horario de Atención (Opcional)"
-                                    labelPlacement="floating"
-                                    value={currentEmpresa.horarioAtencion || ''}
-                                    onIonChange={(e) => handleInputChange("horarioAtencion", e.detail.value)}
-                                    maxlength={100}
-                                ></IonInput>
-                            </IonItem>
-
-                            <IonItem>
-                                <IonInput
-                                    label="Sitio Web (Opcional)"
-                                    labelPlacement="floating"
-                                    type="url" // Asegura que sea un URL válido
-                                    value={currentEmpresa.sitioWeb || ''}
-                                    onIonChange={(e) => handleInputChange("sitioWeb", e.detail.value)}
-                                    maxlength={255}
-                                ></IonInput>
-                            </IonItem>
-
-                            {/* Campo para 'servicios' - se espera un string separado por comas */}
-                            <IonItem>
-                                <IonLabel position="floating">Servicios (separados por comas, Opcional)</IonLabel>
-                                <IonTextarea
-                                    value={(currentEmpresa.servicios || []).join(', ')}
-                                    onIonChange={(e) => handleInputChange("servicios", e.detail.value)}
-                                    autoGrow={true}
-                                    rows={2}
-                                ></IonTextarea>
-                            </IonItem>
-
-                            {/* CAMPOS DE UBICACIÓN GPS - DESCOMENTADOS Y HABILITADOS */}
-                            <IonItem>
-                                <IonInput
-                                    label="Latitud GPS (Opcional)"
-                                    labelPlacement="floating"
-                                    type="number" // Tipo number para valores numéricos
-                                    value={currentEmpresa.ubicacionGps?.lat !== undefined ? currentEmpresa.ubicacionGps.lat : ''}
-                                    onIonChange={(e: CustomEvent<InputChangeEventDetail>) => {
-                                        const value = e.detail.value;
-                                        handleInputChange("ubicacionGps", { 
-                                            lat: value ? parseFloat(value) : 0, // Asigna 0 si es vacío para mantener coherencia
-                                            lng: currentEmpresa.ubicacionGps?.lng || 0 // Mantiene el valor existente de lng
-                                        });
-                                    }}
-                                ></IonInput>
-                            </IonItem>
-                            <IonItem>
-                                <IonInput
-                                    label="Longitud GPS (Opcional)"
-                                    labelPlacement="floating"
-                                    type="number" // Tipo number para valores numéricos
-                                    value={currentEmpresa.ubicacionGps?.lng !== undefined ? currentEmpresa.ubicacionGps.lng : ''}
-                                    onIonChange={(e: CustomEvent<InputChangeEventDetail>) => {
-                                        const value = e.detail.value;
-                                        handleInputChange("ubicacionGps", { 
-                                            lat: currentEmpresa.ubicacionGps?.lat || 0, // Mantiene el valor existente de lat
-                                            lng: value ? parseFloat(value) : 0 // Asigna 0 si es vacío para mantener coherencia
-                                        });
-                                    }}
-                                ></IonInput>
-                            </IonItem>
-
-                            <IonItem>
-                                <IonInput
-                                    label="TikTok (Opcional)"
-                                    labelPlacement="floating"
-                                    value={currentEmpresa.tiktok || ''}
-                                    onIonChange={(e) => handleInputChange("tiktok", e.detail.value)}
-                                    maxlength={50}
-                                ></IonInput>
-                            </IonItem>
-
-                            <IonButton type="submit" expand="block" color="primary" className="ion-margin-top">
-                                <IonIcon slot="start" icon={isEditing ? save : create} />
-                                {isEditing ? "Guardar Cambios" : "Crear Empresa"}
-                            </IonButton>
-                            {isEditing && (
-                                <IonButton onClick={cancelarEdicion} expand="block" color="medium" className="ion-margin-top">
-                                    <IonIcon slot="start" icon={close} />
-                                    Cancelar Edición
-                                </IonButton>
-                            )}
-                        </form>
-                    </IonCardContent>
-                </IonCard>
-
-                {/* Esta es la lista de empresas visible en el mismo formulario.
-                    Si ya tienes una página dedicada para la lista (EmpresasList),
-                    puedes considerar eliminar o simplificar esta sección para evitar duplicidad.
-                    La he dejado completa para que puedas ver todos los datos aquí también. */}
-                <h3 className="ion-padding-top">Empresas Existentes</h3>
-                <IonGrid className="ion-padding-top">
-                    <IonRow>
-                        {empresas.length === 0 && !contextLoading && (
-                            <IonCol size="12" className="ion-text-center">
-                                <p>No hay empresas registradas. ¡Crea una!</p>
-                            </IonCol>
-                        )}
-                        {empresas.map((empresa: Empresa) => (
-                            <IonCol size="12" sizeMd="6" key={empresa.id}>
-                                <IonCard>
-                                    <IonCardContent>
-                                        <h3><strong>Nombre:</strong> {empresa.nombre}</h3>
-                                        <p><strong>Dirección:</strong> {empresa.direccion}</p>
-                                        <p><strong>Categoría:</strong> {empresa.categoria}</p>
-                                        <p><strong>WhatsApp:</strong> {empresa.whatsapp}</p>
-                                        <p><strong>Instagram:</strong> {empresa.instagram}</p>
-                                        
-                                        {/* MOSTRAR TODOS LOS CAMPOS EN LA LISTA DENTRO DEL FORMULARIO */}
-                                        {empresa.descripcion && <p><strong>Descripción:</strong> {empresa.descripcion}</p>}
-                                        {empresa.telefono && <p><strong>Teléfono:</strong> {empresa.telefono}</p>}
-                                        {empresa.email && <p><strong>Email:</strong> {empresa.email}</p>}
-                                        {empresa.logoUrl && <p><strong>URL Logo:</strong> <a href={empresa.logoUrl} target="_blank" rel="noopener noreferrer">{empresa.logoUrl}</a></p>}
-                                        {empresa.horarioAtencion && <p><strong>Horario:</strong> {empresa.horarioAtencion}</p>}
-                                        {empresa.sitioWeb && <p><strong>Sitio Web:</strong> <a href={empresa.sitioWeb} target="_blank" rel="noopener noreferrer">{empresa.sitioWeb}</a></p>}
-                                        {empresa.servicios && empresa.servicios.length > 0 && <p><strong>Servicios:</strong> {empresa.servicios.join(', ')}</p>}
-                                        {empresa.ubicacionGps && (empresa.ubicacionGps.lat !== 0 || empresa.ubicacionGps.lng !== 0) && <p><strong>Ubicación GPS:</strong> Lat: {empresa.ubicacionGps.lat}, Lng: {empresa.ubicacionGps.lng}</p>}
-                                        {empresa.tiktok && <p><strong>TikTok:</strong> @{empresa.tiktok}</p>}
-                                        
-                                        <IonButton 
-                                            onClick={() => iniciarEdicionDesdeLista(empresa)} 
-                                            expand="block" 
-                                            className="ion-margin-top"
-                                        >
-                                            <IonIcon slot="start" icon={create} />
-                                            Editar
-                                        </IonButton>
-                                        
-                                        <IonButton 
-                                            onClick={() => handleDelete(empresa.id)} 
-                                            expand="block" 
-                                            color="danger" 
-                                            className="ion-margin-top"
-                                        >
-                                            <IonIcon slot="start" icon={trash} />
-                                            Eliminar
-                                        </IonButton>
-                                    </IonCardContent>
-                                </IonCard>
-                            </IonCol>
-                        ))}
-                    </IonRow>
-                </IonGrid>
-
-                <IonLoading isOpen={contextLoading} message={"Cargando..."} spinner="circles" />
+                <IonLoading isOpen={showLoading} message={isEditMode ? "Guardando cambios..." : "Agregando empresa..."} />
                 <IonToast
-                    isOpen={!!errorMessage || !!contextError}
-                    message={errorMessage || contextError || ""}
+                    isOpen={showToast}
+                    message={toastMessage}
                     duration={3000}
-                    color="danger"
-                    onDidDismiss={() => { setErrorMessage(null); /* Puedes resetear contextError aquí también si lo deseas */ }}
-                />
-                <IonToast
-                    isOpen={!!successMessage}
-                    message={successMessage || ""}
-                    duration={3000}
-                    color="success"
-                    onDidDismiss={() => setSuccessMessage(null)}
+                    onDidDismiss={() => setShowToast(false)}
+                    color={error ? "danger" : "success"}
                 />
             </IonContent>
         </IonPage>

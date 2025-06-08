@@ -1,62 +1,177 @@
-// src/pages/PublicPage.tsx
-import React from 'react';
-import { IonContent, IonHeader, IonPage, IonTitle, IonToolbar, IonText, IonCard, IonCardHeader, IonCardTitle, IonCardContent } from '@ionic/react';
-import { useTheme } from '../theme/ThemeContext'; // Importamos useTheme
+import React, { useState, useEffect } from 'react';
+import { 
+    IonContent, 
+    IonPage, 
+    IonGrid, 
+    IonRow, 
+    IonCol, 
+    IonCard, 
+    IonCardHeader, 
+    IonCardSubtitle, 
+    IonCardTitle, 
+    IonCardContent, 
+    IonSearchbar,
+    IonChip,
+    IonIcon,
+    IonText,
+    IonButton,
+    IonToast,
+    IonLoading,
+    IonList, 
+    IonItem, 
+    IonLabel 
+} from '@ionic/react';
+import { useEmpresas } from '../EmpresasContext';
+// 'ticketOutline' ha sido eliminado de las importaciones ya que no se usaba.
+import { callOutline, mailOutline, logoWhatsapp, logoInstagram, linkOutline, locationOutline, timeOutline, logoTiktok } from 'ionicons/icons';
 
 const PublicPage: React.FC = () => {
-  // Ahora solo accedemos a 'theme', no a 'toggleTheme'
-  const { theme } = useTheme(); 
+  const { empresas, fetchEmpresas, isLoading, error, clearError } = useEmpresas();
+  const [searchText, setSearchText] = useState('');
+  const [showToast, setShowToast] = useState(false);
+  const [toastMessage, setToastMessage] = useState('');
+
+  useEffect(() => {
+    fetchEmpresas();
+  }, [fetchEmpresas]);
+
+  useEffect(() => {
+    if (error) {
+      setToastMessage(error);
+      setShowToast(true);
+      clearError();
+    }
+  }, [error, clearError]);
+
+  const filteredEmpresas = empresas.filter(empresa => {
+    const searchLower = searchText.toLowerCase();
+    return (
+      empresa.nombre.toLowerCase().includes(searchLower) ||
+      (empresa.categoria && empresa.categoria.toLowerCase().includes(searchLower)) ||
+      (empresa.descripcion && empresa.descripcion.toLowerCase().includes(searchLower)) ||
+      (empresa.servicios && empresa.servicios.some(servicio => servicio.toLowerCase().includes(searchLower)))
+    );
+  });
 
   return (
     <IonPage>
-      {/* El IonHeader ya no necesita el botón de tema aquí, ya que se maneja automáticamente en App.tsx */}
-      {/* Si tenías un IonHeader aquí con un botón de tema, ese botón debe ser eliminado */}
       <IonContent fullscreen className="ion-padding">
-        <IonText className="welcome-text">
-          <h1>¡Bienvenido a InfoCiudad!</h1>
-          <p>Tu guía definitiva para encontrar todo lo que necesitas en nuestra ciudad.</p>
-        </IonText>
+        <IonSearchbar
+          value={searchText}
+          onIonChange={(e) => setSearchText(e.detail.value!)}
+          placeholder="Buscar empresas, categorías o servicios..."
+        ></IonSearchbar>
 
-        <IonCard>
-          <IonCardHeader>
-            <IonCardTitle>¿Qué puedes encontrar aquí?</IonCardTitle>
-          </IonCardHeader>
-          <IonCardContent>
-            <ul>
-              <li>Empresas y negocios locales.</li>
-              <li>Servicios profesionales.</li>
-              <li>Eventos y actividades culturales.</li>
-            </ul>
-          </IonCardContent>
-        </IonCard>
+        {isLoading && <IonLoading isOpen={true} message={"Cargando..."} />}
+        {filteredEmpresas.length === 0 && !isLoading && (
+          <IonText color="medium">
+            <p className="ion-text-center ion-padding-top">No se encontraron empresas.</p>
+          </IonText>
+        )}
 
-        <IonCard>
-          <IonCardHeader>
-            <IonCardTitle>Explora y Conecta</IonCardTitle>
-          </IonCardHeader>
-          <IonCardContent>
-            <IonText>
-              <p>Usa la navegación para descubrir lo que nuestra ciudad tiene para ofrecer. ¡Encuentra lo que buscas o publica tu propio negocio!</p>
-            </IonText>
-          </IonCardContent>
-        </IonCard>
+        <IonGrid className="ion-margin-top">
+          <IonRow>
+            {filteredEmpresas.map(empresa => (
+              <IonCol size-xs="12" size-sm="6" size-md="4" size-lg="3" key={empresa.id}>
+                <IonCard>
+                  <IonCardHeader>
+                    {empresa.logoUrl && <img src={empresa.logoUrl} alt={`${empresa.nombre} logo`} className="company-logo" />}
+                    <IonCardTitle>{empresa.nombre}</IonCardTitle>
+                    {empresa.categoria && <IonCardSubtitle>{empresa.categoria}</IonCardSubtitle>}
+                  </IonCardHeader>
+                  <IonCardContent>
+                    {empresa.descripcion && <p>{empresa.descripcion}</p>}
+                    <IonList lines="none">
+                      {empresa.direccion && (
+                        <IonItem>
+                          <IonIcon icon={locationOutline} slot="start" />
+                          <IonLabel>{empresa.direccion}</IonLabel>
+                        </IonItem>
+                      )}
+                      {empresa.telefono && (
+                        <IonItem href={`tel:${empresa.telefono}`}>
+                          <IonIcon icon={callOutline} slot="start" />
+                          <IonLabel>{empresa.telefono}</IonLabel>
+                        </IonItem>
+                      )}
+                      {empresa.whatsapp && (
+                        <IonItem href={`https://wa.me/${empresa.whatsapp}`} target="_blank" rel="noopener noreferrer">
+                          <IonIcon icon={logoWhatsapp} slot="start" color="success" />
+                          <IonLabel>{empresa.whatsapp}</IonLabel>
+                        </IonItem>
+                      )}
+                      {empresa.email && (
+                        <IonItem href={`mailto:${empresa.email}`}>
+                          <IonIcon icon={mailOutline} slot="start" />
+                          <IonLabel>{empresa.email}</IonLabel>
+                        </IonItem>
+                      )}
+                      {empresa.horarioAtencion && (
+                        <IonItem>
+                          <IonIcon icon={timeOutline} slot="start" />
+                          <IonLabel>{empresa.horarioAtencion}</IonLabel>
+                        </IonItem>
+                      )}
+                      {empresa.sitioWeb && (
+                        <IonItem href={empresa.sitioWeb} target="_blank" rel="noopener noreferrer">
+                          <IonIcon icon={linkOutline} slot="start" />
+                          <IonLabel>{empresa.sitioWeb}</IonLabel>
+                        </IonItem>
+                      )}
+                      {empresa.instagram && (
+                        <IonItem href={`https://instagram.com/${empresa.instagram}`} target="_blank" rel="noopener noreferrer">
+                          <IonIcon icon={logoInstagram} slot="start" color="danger" />
+                          <IonLabel>@{empresa.instagram}</IonLabel>
+                        </IonItem>
+                      )}
+                      {empresa.tiktok && (
+                        <IonItem href={`https://tiktok.com/@${empresa.tiktok}`} target="_blank" rel="noopener noreferrer">
+                          <IonIcon icon={logoTiktok} slot="start" />
+                          <IonLabel>@{empresa.tiktok}</IonLabel>
+                        </IonItem>
+                      )}
+                    </IonList>
 
-        <IonCard>
-          <IonCardHeader>
-            <IonCardTitle>¿Eres un negocio local?</IonCardTitle>
-          </IonCardHeader>
-          <IonCardContent>
-            <IonText>
-              <p>¡Únete a nuestra plataforma y haz que tu negocio sea visible para miles de personas! Contáctanos para más información sobre cómo registrarte.</p>
-            </IonText>
-          </IonCardContent>
-        </IonCard>
+                    {empresa.servicios && empresa.servicios.length > 0 && (
+                      <div className="ion-margin-top">
+                        <IonText color="dark"><strong>Servicios:</strong></IonText>
+                        <div className="ion-chip-list">
+                          {empresa.servicios.map((servicio, index) => (
+                            <IonChip key={index} outline color="primary">
+                              <IonLabel>{servicio}</IonLabel>
+                            </IonChip>
+                          ))}
+                        </div>
+                      </div>
+                    )}
 
-        {/* Puedes mostrar el tema actual si lo deseas, pero no es interactivo */}
-        <IonText className="ion-text-center ion-padding-vertical">
-          <p>Modo actual: {theme === 'dark' ? 'Oscuro' : 'Claro'}</p>
-        </IonText>
+                    {empresa.ubicacionGps && (empresa.ubicacionGps.lat !== 0 || empresa.ubicacionGps.lng !== 0) && (
+                      <IonButton 
+                        expand="block" 
+                        fill="outline" 
+                        className="ion-margin-top"
+                        href={`http://maps.google.com/maps?q=${empresa.ubicacionGps.lat},${empresa.ubicacionGps.lng}`} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                      >
+                        <IonIcon icon={locationOutline} slot="start" />
+                        Ver en Mapa
+                      </IonButton>
+                    )}
+                  </IonCardContent>
+                </IonCard>
+              </IonCol>
+            ))}
+          </IonRow>
+        </IonGrid>
 
+        <IonToast
+          isOpen={showToast}
+          message={toastMessage}
+          duration={3000}
+          onDidDismiss={() => setShowToast(false)}
+          color="danger"
+        />
       </IonContent>
     </IonPage>
   );

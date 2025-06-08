@@ -1,7 +1,5 @@
-// src/App.tsx
 import React from 'react';
-// Importamos BrowserRouter, Route, Switch, Redirect, useHistory de 'react-router-dom'
-import { BrowserRouter as Router, Route, Switch, Redirect, useHistory } from 'react-router-dom'; 
+// Importamos los componentes de UI de '@ionic/react'
 import { 
     IonApp, 
     IonRouterOutlet, 
@@ -9,19 +7,22 @@ import {
     IonHeader, 
     IonToolbar, 
     IonTitle,
-    IonButtons,    
-    IonButton,     
-    IonIcon,       
-    IonMenu,       
-    IonContent,    
-    IonList,       
-    IonItem,       
-    IonLabel,      
-    IonMenuToggle, 
-    IonSplitPane   
+    IonButtons,     
+    IonButton,      
+    IonIcon,        
+    IonMenu,        
+    IonContent,     
+    IonList,        
+    IonItem,        
+    IonLabel,       
+    IonMenuToggle,  
+    IonSplitPane
 } from '@ionic/react';
-// Solo IonReactRouter de @ionic/react-router para envolver
+
+// Importamos solo IonReactRouter de '@ionic/react-router'
 import { IonReactRouter } from '@ionic/react-router'; 
+// Importamos Route, Switch, Redirect, useHistory desde 'react-router-dom' <-- ¡ESTE ES EL CAMBIO CLAVE QUE CORRIGE TODOS ESOS ERRORES!
+import { Route, Switch, Redirect, useHistory } from 'react-router-dom'; 
 
 import { menu as menuIcon } from 'ionicons/icons'; 
 
@@ -51,7 +52,8 @@ import './theme/variables.css';
 setupIonicReact();
 
 const AppContent: React.FC = () => {
-  const history = useHistory(); // useHistory desde 'react-router-dom'
+  // useHistory ahora viene de 'react-router-dom'
+  const history = useHistory(); 
 
   return (
     <IonSplitPane contentId="main-content" when="false"> 
@@ -91,7 +93,7 @@ const AppContent: React.FC = () => {
                 </IonButton>
               </IonMenuToggle>
             </IonButtons>
-            
+
             <IonTitle>InfoCiudad</IonTitle>
 
             <IonButtons slot="end" className="ion-hide-md-down"> 
@@ -111,7 +113,7 @@ const AppContent: React.FC = () => {
           </IonToolbar>
         </IonHeader>
 
-        <IonRouterOutlet basePath="/" ionPage={true} {...({} as any)}>
+        <IonRouterOutlet id="main-content"> 
           <Switch>
             <Route path="/home" component={Home} exact={true} />
             <Route path="/empresas" component={EmpresasForm} exact={true} />

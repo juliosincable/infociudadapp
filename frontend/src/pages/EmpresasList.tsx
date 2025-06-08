@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react"; // Aquí hemos cambiado 'import * as React' por 'import React'
+import React, { useState, useEffect } from "react";
 import {
     IonContent,
     IonHeader,
@@ -20,12 +20,12 @@ import {
 } from "@ionic/react";
 import { add, search, refresh, create, close } from "ionicons/icons";
 import { useEmpresas } from "../EmpresasContext";
-import { useTheme } from "../theme/ThemeContext";
+// import { useTheme } from "../theme/ThemeContext"; // Ya no se necesita si no se usa el tema en este componente
 import { Empresa } from "../types"; // Asegúrate de que esta ruta sea correcta
 
 const EmpresasList: React.FC = () => {
     const { empresas, fetchEmpresas, isLoading: contextLoading, error: contextError, clearError } = useEmpresas();
-    const { theme } = useTheme();
+    // const { theme } = useTheme(); // Esta línea ya estaba comentada o eliminada
     const [searchTerm, setSearchTerm] = useState("");
     const [selectedEmpresa, setSelectedEmpresa] = useState<Empresa | null>(null);
 

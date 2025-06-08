@@ -1,77 +1,22 @@
-# docker-compose.yml
 
 services:
-  frontend:
-    # Apunta al directorio donde se encuentra el Dockerfile del frontend
-    build: ./frontend
-    ports:
-      # Mapea el puerto 80 del host (el puerto HTTP estándar)
-      # al puerto 80 dentro del contenedor Nginx.
-      - "80:80"
-    # En producción, NO queremos montar el código fuente local.
-    # Docker construirá la imagen con la aplicación ya compilada.
-    # Tampoco necesitamos el volumen para node_modules.
-    # volumes:
-    #   - ./frontend:/app
-    #   - /app/node_modules
-    
-    # Las variables de entorno para la API ahora se manejan en la etapa de construcción del Dockerfile
-    # o se inyectan en tiempo de ejecución si es necesario (métodos más avanzados).
-    # Si tu frontend necesita la URL de la API en tiempo de ejecución (ej. para llamadas AJAX),
-    # podrías necesitar una forma de inyectarla (ej. usando un archivo JS generado dinámicamente
-    # o variables de entorno de Nginx si tu framework lo soporta).
-    # Por ahora, asumimos que la URL de la API se maneja en la construcción si es posible,
-    # o que la configuración de Nginx o la app manejan la comunicación entre contenedores.
-    # environment:
-    #   - NODE_ENV=production # Opcional, si tu app lo usa para algo en el cliente
-    #   - REACT_APP_API_URL=http://backend:4000 # Esta variable ya no se pasa así directamente al contenedor Nginx
-
-    # El comando ahora es el comando por defecto de Nginx para mantenerse en primer plano.
-    # No necesitas definirlo aquí si el Dockerfile lo especifica con CMD.
-    # command: ["nginx", "-g", "daemon off;"] # Esto ya está en el Dockerfile
-
-    # Asegura que el frontend espere a que el backend esté listo (opcional pero recomendado)
-    depends_on:
-      - backend
-    
-    networks:
-      - app-network
-
-  backend:
-    build: ./backend
-    ports:
-      - "4000:4000"
-    volumes:
-      - ./backend:/app
-      - /app/node_modules
-    environment:
-      - NODE_ENV=development # Puedes cambiar a 'production' si despliegas el backend en producción
-      - PORT=4000
-      - MONGODB_URI=mongodb://mongo:27017/empresas
-      # CORS_ORIGIN debe ser la URL pública de tu frontend en el VPS
-      # o permitir el origen de tu VPS si no usas un dominio.
-      # Si accedes desde localhost en tu máquina (usando el mapeo 80:80),
-      # podrías necesitar permitir localhost:80 o la IP de tu máquina.
-      - CORS_ORIGIN=http://tu_ip_vps # O la URL de tu dominio
-    command: ["npm", "run", "dev"] # Cambia a ["npm", "start"] o similar para producción
-    depends_on:
-      - mongo
-    networks:
-      - app-network
-
   mongo:
-    image: mongo:4.4 # ¡Este es el cambio clave!
+    image: mongo:4.4
+    container_name: mongodb_infociudadapp
+    # Deja los puertos expuestos si necesitas acceder a MongoDB Compass desde tu máquina.
+    # En producción real, considera NO exponer este puerto externamente y usa un firewall.
     ports:
-      # Generalmente no se expone el puerto de la base de datos al exterior (host) en producción
-      # a menos que tengas una razón específica y controles el acceso estrictamente.
-      # Si solo el backend necesita acceder, elimina esta línea:
-      # - "27017:27017"
-      # Si la dejas, asegúrate de configurar un firewall en tu VPS para bloquear este puerto externamente.
-      - "27017:27017" # Dejado por ahora, pero considera eliminarlo en producción real
+      - "27017:27017"
     volumes:
+      # Volumen para persistir los datos de MongoDB. Muy importante para no perder tus registros.
       - mongo-data:/data/db
     environment:
-      - MONGO_INITDB_DATABASE=empresas
+      # ¡IMPORTANTE! Define usuario y contraseña para el usuario root de MongoDB.
+      # ¡CAMBIA 'root_user' y 'root_password' por valores REALES y SEGUROS!
+      MONGO_INITDB_ROOT_USERNAME: root_user # <-- ¡CAMBIAR!
+      MONGO_INITDB_ROOT_PASSWORD: root_password # <-- ¡CAMBIAR!
+      # Establece la base de datos por defecto a 'empresas'
+      MONGO_INITDB_DATABASE: empresas
     networks:
       - app-network
     healthcheck:
@@ -79,10 +24,54 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    restart: always
+
+  backend:
+    build: ./backend
+    container_name: backend_infociudadapp
+    ports:
+      - "4000:4000"
+    volumes:
+      # Monta tu código local del backend en el contenedor para desarrollo en vivo
+      - ./backend:/app
+      - /app/node_modules # Evita que node_modules local sobrescriba el del contenedor
+    environment:
+      NODE_ENV: development
+      PORT: 4000
+      # ¡IMPORTANTE! Actualiza la URI de MongoDB para incluir las credenciales.
+      # El nombre del host es 'mongo' porque así se llama el servicio en este docker-compose.yml.
+      MONGODB_URI: mongodb://root_user:root_password@mongo:27017/empresas?authSource=admin # <-- ¡CAMBIAR USER Y PASS!
+      # CORS_ORIGIN para desarrollo local (http://localhost) y posible entorno de VPS.
+      # Si accedes desde http://localhost, el frontend está en puerto 80, así que el origen es http://localhost.
+      CORS_ORIGIN: http://localhost # <-- ¡AJUSTADO PARA DESARROLLO LOCAL!
+    command: ["npm", "run", "dev"]
+    depends_on:
+      - mongo # El backend depende del servicio de mongo
+    networks:
+      - app-network
+    restart: always
+
+  frontend:
+    build: ./frontend
+    container_name: frontend_infociudadapp
+    ports:
+      # Mapea el puerto 80 del host al puerto 80 del contenedor.
+      # La URL de tu aplicación frontend será http://localhost
+      - "80:80"
+    # Los volúmenes están comentados para producción, lo cual es correcto.
+    # Si quieres hot-reloading en desarrollo para el frontend,
+    # descomenta las líneas 'volumes' y 'depends_on: - backend'
+    # y ajusta el Dockerfile para desarrollo.
+    # Para tu caso actual, asumimos que Docker construye el frontend.
+    depends_on:
+      - backend # El frontend depende del backend
+    networks:
+      - app-network
+    restart: always
 
 volumes:
   mongo-data:
-    name: mongo-data
+    name: mongo-data # Nombre del volumen para persistir datos de MongoDB
 
 networks:
   app-network:
