@@ -1,6 +1,6 @@
 /* src/theme/variables.css */
 
-/* --- Variables por defecto (tema claro - AHORA CON AZULES Y VERDES) --- */
+/* --- Variables por defecto (tema claro - AHORA CON CIAN SÓLIDO) --- */
 :root {
   /** Ionic tertiary color **/
   --ion-color-tertiary: #D500F9; /* Magenta Brillante */
@@ -10,39 +10,35 @@
   --ion-color-tertiary-shade: #be00dd;
   --ion-color-tertiary-tint: #df1aff;
 
-  /* Tus variables personalizadas para el fondo de la app - TEMA CLARO (AZULES Y VERDES) */
-  --app-color-background: #E0F2F7; /* Un azul muy claro como base */
-  --app-gradient-bg: linear-gradient(to bottom, #A5D6A7, #81C784, #4CAF50); /* Un degradado de verdes claros a medios */
-  /* O podrías probar un degradado de azul a verde: */
-  /* --app-gradient-bg: linear-gradient(to bottom right, #BBDEFB, #81D4FA, #80CBC4, #A5D6A7); */
+  /* Tus variables personalizadas para el fondo de la app - TEMA CLARO (CIAN SÓLIDO) */
+  --app-color-background: #00FFFF; /* ¡Cian sólido! */
+  --app-gradient-bg: #00FFFF; /* También para asegurar la compatibilidad con propiedades que esperen un "gradient" */
 
 
   /* --- Aplicar el fondo a los elementos principales en el tema claro --- */
-  /* Eliminamos los !important temporales si ya funciona la visualización */
   --ion-background-color: var(--app-color-background); /* Para el body y el sistema Ionic */
   background: var(--app-gradient-bg); /* Para el body */
 }
 
 /* Aplicar el fondo a elementos específicos (se heredarán de :root o body) */
 ion-app {
-  --ion-background-color: var(--app-color-background);
-  background: var(--app-gradient-bg);
+  --ion-background-color: var(--app-color-background) !important;
+  background: var(--app-gradient-bg) !important;
 }
 
 ion-content {
-  --background: var(--app-gradient-bg); /* Propiedad específica de IonContent */
-  background: var(--app-gradient-bg);
+  --background: var(--app-gradient-bg) !important; /* Propiedad específica de IonContent */
+  background: var(--app-gradient-bg) !important;
 }
 
-main {
-  /* El elemento <main> que identificaste con el turquesa */
-  --ion-background-color: var(--app-color-background);
-  background: var(--app-gradient-bg);
-}
+/* Si tienes un main y necesitas forzarle el fondo sólido */
+/* main {
+  background: var(--app-gradient-bg) !important;
+} */
+
 
 /* --- Variables para el Tema Oscuro --- */
 body[data-theme="dark"] {
-  /* Asegúrate de que tus variables de color para el modo oscuro están aquí */
   --ion-color-tertiary: #D500F9; /* Tu magenta para modo oscuro (si es diferente, cámbialo) */
   --ion-color-tertiary-rgb: 213, 0, 249;
   --ion-color-tertiary-contrast: #ffffff;
@@ -52,20 +48,24 @@ body[data-theme="dark"] {
 
   /* Tus variables personalizadas para el fondo de la app - TEMA OSCURO */
   --app-color-background: #1C1C1C; /* Un gris oscuro */
-  --app-gradient-bg: linear-gradient(to bottom, #1C1C1C, #282828);
+  --app-gradient-bg: linear-gradient(to bottom, #1C1C1C, #282828); /* Mantenemos el degradado oscuro por ahora */
 }
 
 /* --- Aplicar el fondo a los elementos principales en el tema oscuro --- */
-body[data-theme="dark"] body,
 body[data-theme="dark"] ion-app,
-body[data-theme="dark"] ion-content,
-body[data-theme="dark"] main {
-  --ion-background-color: var(--app-color-background);
-  background: var(--app-gradient-bg);
+body[data-theme="dark"] ion-content {
+  --ion-background-color: var(--app-color-background) !important;
+  background: var(--app-gradient-bg) !important;
+  --background: var(--app-gradient-bg) !important; /* También para ion-content en oscuro */
 }
 
+/* Puedes añadir main si es necesario para el tema oscuro también */
+/* body[data-theme="dark"] main {
+  background: var(--app-gradient-bg) !important;
+} */
+
+
 /* --- OTRAS REGLAS PARA COMPONENTES ESPECÍFICOS QUE USEN TERTIARY --- */
-/* Estas son las reglas que aseguran que botones, toolbars, etc., usen tu magenta */
 ion-button[color="tertiary"] {
   --background: var(--ion-color-tertiary);
   --color: var(--ion-color-tertiary-contrast);
@@ -96,10 +96,3 @@ body[data-theme="dark"] ion-icon[color="tertiary"] {
   color: var(--ion-color-tertiary);
   fill: var(--ion-color-tertiary);
 }
-
-/* Eliminamos la regla body agresiva con !important, ya que el tema oscuro funciona y la app se ve. */
-/* Si la ves blanca en modo claro es porque el color anterior era casi blanco. */
-/* body {
-    background: var(--app-gradient-bg) !important;
-    background-color: var(--app-color-background) !important;
-} */
