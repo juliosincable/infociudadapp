@@ -10,17 +10,18 @@ export const EmpresasProvider: React.FC<{ children: ReactNode }> = ({ children }
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
-    // Asegúrate de que esta URL sea la correcta y accesible para tu backend.
-    // Por ejemplo, si tu backend corre en localhost:3001 y tienes una ruta /api/empresas
-    // en desarrollo, podrías necesitar 'http://localhost:3001/api/empresas'.
-    // En producción, el proxy de Vite/Create React App o tu servidor web lo manejaría.
-    const API_URL = '/api/empresas'; 
+    // *******************************************************************
+    // ¡CORRECCIÓN CRUCIAL AQUÍ!
+    // Apunta directamente a la IP de tu VPS y al puerto de tu backend (4000).
+    // Reemplaza '200.6.157.250' con la IP real de tu VPS si es diferente.
+    const API_URL = 'http://200.6.157.250:4000/api/empresas'; 
+    // *******************************************************************
 
     const fetchEmpresas = useCallback(async () => {
         setIsLoading(true);
         setError(null);
         try {
-            console.log("Fetching empresas from API...");
+            console.log("Fetching empresas from API:", API_URL); // Loguea la URL completa
             const response = await fetch(API_URL);
 
             if (!response.ok) {
@@ -28,7 +29,6 @@ export const EmpresasProvider: React.FC<{ children: ReactNode }> = ({ children }
                 throw new Error(`Error HTTP! estado: ${response.status} - ${errorText}`);
             }
             const data: Empresa[] = await response.json();
-            // ¡Punto de depuración clave! Revisa esto en la consola del navegador.
             console.log("Datos recibidos de la API en el contexto (fetchEmpresas):", data); 
             setEmpresas(data);
         } catch (err: any) {
@@ -37,7 +37,7 @@ export const EmpresasProvider: React.FC<{ children: ReactNode }> = ({ children }
         } finally {
             setIsLoading(false);
         }
-    }, [API_URL]); // `API_URL` es una dependencia para useCallback.
+    }, [API_URL]); 
 
     const createEmpresa = useCallback(async (newEmpresa: Omit<Empresa, 'id'>) => {
         setIsLoading(true);
@@ -56,9 +56,8 @@ export const EmpresasProvider: React.FC<{ children: ReactNode }> = ({ children }
                 throw new Error(`Error HTTP! estado: ${response.status} - ${errorText}`);
             }
             const createdEmpresa: Empresa = await response.json();
-            // ¡Punto de depuración clave! Revisa esto en la consola del navegador.
             console.log("Empresa creada y recibida del API:", createdEmpresa);
-            setEmpresas(prev => [...prev, createdEmpresa]); // Agrega la nueva empresa al estado local
+            setEmpresas(prev => [...prev, createdEmpresa]); 
         } catch (err: any) {
             console.error("Error al crear empresa:", err);
             setError(err.message || "Error al crear empresa.");
@@ -72,8 +71,7 @@ export const EmpresasProvider: React.FC<{ children: ReactNode }> = ({ children }
         setError(null);
         try {
             console.log(`Updating empresa con ID: ${id}, datos:`, updatedEmpresa);
-            // **¡CORRECCIÓN CRUCIAL AQUÍ! Usando template literals para la URL.**
-            const response = await fetch(`${API_URL}/${id}`, { 
+            const response = await fetch(`${API_URL.replace('/api/empresas', '')}/${id}`, { // Ajuste para URL base + ID
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -84,10 +82,8 @@ export const EmpresasProvider: React.FC<{ children: ReactNode }> = ({ children }
                 const errorText = await response.text();
                 throw new Error(`Error HTTP! estado: ${response.status} - ${errorText}`);
             }
-            // Asumiendo que el backend devuelve la empresa actualizada
             const fetchedUpdatedEmpresa: Empresa = await response.json(); 
             console.log("Empresa actualizada recibida del API:", fetchedUpdatedEmpresa);
-            // Actualiza la empresa en el estado local inmutablemente
             setEmpresas(prev => prev.map(emp => (emp.id === id ? fetchedUpdatedEmpresa : emp)));
         } catch (err: any) {
             console.error("Error al actualizar empresa:", err);
@@ -102,15 +98,13 @@ export const EmpresasProvider: React.FC<{ children: ReactNode }> = ({ children }
         setError(null);
         try {
             console.log("Deleting empresa con ID:", id);
-            // **¡CORRECCIÓN CRUCIAL AQUÍ! Usando template literals para la URL.**
-            const response = await fetch(`${API_URL}/${id}`, { 
+            const response = await fetch(`${API_URL.replace('/api/empresas', '')}/${id}`, { // Ajuste para URL base + ID
                 method: 'DELETE',
             });
             if (!response.ok) {
                 const errorText = await response.text();
                 throw new Error(`Error HTTP! estado: ${response.status} - ${errorText}`);
             }
-            // Si el backend no devuelve nada en un DELETE exitoso, solo se filtra del estado
             setEmpresas(prev => prev.filter(emp => emp.id !== id));
             console.log(`Empresa con ID ${id} eliminada del estado local.`);
         } catch (err: any) {
@@ -121,15 +115,13 @@ export const EmpresasProvider: React.FC<{ children: ReactNode }> = ({ children }
         }
     }, [API_URL]);
 
-    // Función para limpiar el estado de error, útil para el IonToast
     const clearError = useCallback(() => {
         setError(null);
     }, []);
 
-    // Este useEffect se ejecuta una sola vez para cargar las empresas inicialmente.
     useEffect(() => {
         fetchEmpresas();
-    }, [fetchEmpresas]); // 'fetchEmpresas' es una dependencia porque está envuelta en useCallback.
+    }, [fetchEmpresas]); 
 
     const contextValue: EmpresasContextType = {
         empresas,
@@ -139,7 +131,7 @@ export const EmpresasProvider: React.FC<{ children: ReactNode }> = ({ children }
         deleteEmpresa,
         isLoading,
         error,
-        clearError, // Exponemos clearError
+        clearError, 
     };
 
     return (

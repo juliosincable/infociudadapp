@@ -1,14 +1,39 @@
-import express from "express";
-import mongoose from "mongoose";
+const express = require("express");
+const mongoose = require("mongoose");
 
 const app = express();
 
 const dbURI = process.env.MONGODB_URI || "mongodb://mongo:27017/empresas";
 const PORT = 4000;
 
-// Configuración de CORS manual
+// *******************************************************************
+// ¡CORRECCIÓN CRUCIAL AQUÍ PARA EL CORS MANUAL!
+// Ajusta 'Access-Control-Allow-Origin' para permitir tu frontend público.
+// Elige UNA de estas opciones y asegúrate de que la otra esté comentada.
+
+// OPCIÓN 1: Permitir solo tu IP pública (recomendado para producción)
+/*
 app.use((req, res, next) => {
-    res.setHeader("Access-Control-Allow-Origin", process.env.CORS_ORIGIN || "http://localhost:3000");
+    res.setHeader("Access-Control-Allow-Origin", "http://200.6.157.250"); // <--- Asegúrate de que esta línea esté activa
+    res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+    res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+    if (req.method === "OPTIONS") {
+        return res.sendStatus(200);
+    }
+    next();
+});
+*/
+
+// OPCIÓN 2: Permitir múltiples orígenes (si también desarrollas localmente y quieres ambas)
+app.use((req, res, next) => {
+    const allowedOrigins = [
+        "http://localhost:3000", // Para tu desarrollo local
+        "http://200.6.157.250"   // Para tu aplicación desplegada (IP de tu VPS)
+    ];
+    const origin = req.headers.origin;
+    if (allowedOrigins.includes(origin)) {
+        res.setHeader("Access-Control-Allow-Origin", origin);
+    }
     res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
     res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
     if (req.method === "OPTIONS") {
@@ -17,13 +42,15 @@ app.use((req, res, next) => {
     next();
 });
 
+// *******************************************************************
+
 app.use(express.json());
 
 mongoose.connect(dbURI)
     .then(() => console.log("Conexión a la base de datos exitosa"))
     .catch((error) => {
         console.error("ERROR CRÍTICO: Conexión a la base de datos fallida:", error);
-        // process.exit(1);
+        // process.exit(1); // Descomentar solo si quieres que la app se detenga en caso de fallo de DB
     });
 
 // Definimos un esquema y modelo de Mongoose
@@ -33,14 +60,26 @@ const EmpresaSchema = new mongoose.Schema({
     categoria: { type: String, trim: true },
     whatsapp: { type: String, trim: true },
     instagram: { type: String, trim: true },
+    // Agrega aquí los demás campos si los usas en el frontend
+    // email: { type: String, trim: true },
+    // logoUrl: { type: String, trim: true },
+    // horarioAtencion: { type: String, trim: true },
+    // sitioWeb: { type: String, trim: true },
+    // descripcion: { type: String, trim: true },
+    // tiktok: { type: String, trim: true },
+    // servicios: [{ type: String, trim: true }],
+    // ubicacionGps: {
+    //   lat: { type: Number },
+    //   lng: { type: Number }
+    // }
 }, { timestamps: true });
 
-// **AQUÍ ESTÁ EL CAMBIO CRUCIAL: Configuración para transformar _id a id**
+// **Configuración crucial: para transformar _id a id**
 EmpresaSchema.set('toJSON', {
     virtuals: true, // Incluir propiedades virtuales (como 'id')
     transform: (doc, ret) => {
         ret.id = ret._id; // Mapea _id a id
-        delete ret._id;   // Elimina _id (opcional, pero buena práctica si solo quieres 'id')
+        delete ret._id;   // Elimina _id
         delete ret.__v;   // Elimina la versión (__v)
     }
 });
@@ -75,7 +114,7 @@ apiRouter.get("/empresas", async (_req, res) => {
         res.status(200).json(empresas);
     } catch (error) {
         console.error("Error al obtener empresas:", error);
-        res.status(500).json({ error: "Error interno del servidor al obtener empresas." });
+        res.status(500).json({ error: "Error interno del servidor al obtener empresa." });
     }
 });
 
@@ -98,7 +137,7 @@ apiRouter.put("/empresas/:id", async (req, res) => {
         const updatedEmpresa = await Empresa.findByIdAndUpdate(
             req.params.id,
             req.body,
-            { new: true }
+            { new: true } // Devuelve el documento actualizado
         );
         if (!updatedEmpresa) return res.status(404).json({ error: "Empresa no encontrada" });
         // La empresa actualizada será automáticamente transformada a JSON con 'id' en lugar de '_id'
@@ -112,10 +151,9 @@ apiRouter.put("/empresas/:id", async (req, res) => {
 // Ruta para eliminar una empresa por ID
 apiRouter.delete("/empresas/:id", async (req, res) => {
     try {
-        // Aquí no necesitas la transformación, ya que solo necesitas el ID para la operación de eliminación
         const deletedEmpresa = await Empresa.findByIdAndDelete(req.params.id);
         if (!deletedEmpresa) return res.status(404).json({ error: "Empresa no encontrada" });
-        res.status(200).json({ message: "Empresa eliminada exitosamente." }); // Mensaje de éxito más claro
+        res.status(200).json({ message: "Empresa eliminada exitosamente." }); // Mensaje de éxito
     } catch (error) {
         console.error("Error al eliminar empresa:", error);
         res.status(500).json({ error: "Error interno del servidor al eliminar empresa." });
