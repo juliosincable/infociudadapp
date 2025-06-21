@@ -5,27 +5,23 @@ import {
     IonPage,
     IonTitle,
     IonToolbar,
-    IonList,
     IonItem,
     IonLabel,
     IonInput,
     IonButton,
-    IonIcon,
     IonLoading,
     IonToast,
     InputChangeEventDetail,
     IonCard,
     IonCardHeader,
     IonCardContent,
+    IonCardTitle,
 } from "@ionic/react";
-import { add, search, refresh, create, close } from "ionicons/icons";
 import { useEmpresas } from "../EmpresasContext";
-// import { useTheme } from "../theme/ThemeContext"; // Ya no se necesita si no se usa el tema en este componente
-import { Empresa } from "../types"; // Asegúrate de que esta ruta sea correcta
+import { Empresa } from "../types";
 
 const EmpresasList: React.FC = () => {
     const { empresas, fetchEmpresas, isLoading: contextLoading, error: contextError, clearError } = useEmpresas();
-    // const { theme } = useTheme(); // Esta línea ya estaba comentada o eliminada
     const [searchTerm, setSearchTerm] = useState("");
     const [selectedEmpresa, setSelectedEmpresa] = useState<Empresa | null>(null);
 
@@ -35,100 +31,114 @@ const EmpresasList: React.FC = () => {
 
     const handleSearchChange = (e: CustomEvent<InputChangeEventDetail>) => {
         setSearchTerm(e.detail.value ? String(e.detail.value) : "");
+        // Al buscar, siempre se debe volver a la lista principal
         setSelectedEmpresa(null);
     };
 
     const handleShowDetails = (empresa: Empresa) => {
         setSelectedEmpresa(empresa);
-        console.log("Empresa seleccionada para detalles:", empresa);
     };
 
-    const handleCloseDetails = () => {
+    const handleBackToList = () => {
         setSelectedEmpresa(null);
     };
 
+    // Función para renderizar los detalles de la empresa, mostrando solo los campos con valor
+    const renderEmpresaDetails = (empresa: Empresa) => {
+        const details: { label: string; value: string | number | string[] | { lat: number; lng: number } | undefined | null }[] = [
+            { label: "Dirección", value: empresa.direccion },
+            { label: "Categoría", value: empresa.categoria },
+            { label: "WhatsApp", value: empresa.whatsapp },
+            { label: "Instagram", value: empresa.instagram ? `@${empresa.instagram}` : null },
+            { label: "Descripción", value: empresa.descripcion },
+            { label: "Teléfono", value: empresa.telefono },
+            { label: "Email", value: empresa.email },
+            { label: "URL Logo", value: empresa.logoUrl },
+            { label: "Horario de Atención", value: empresa.horarioAtencion },
+            { label: "Sitio Web", value: empresa.sitioWeb },
+            { label: "Servicios", value: empresa.servicios && empresa.servicios.length > 0 ? empresa.servicios.join(', ') : null },
+            { label: "Ubicación GPS", value: empresa.ubicacionGps && (empresa.ubicacionGps.lat !== 0 || empresa.ubicacionGps.lng !== 0) ? `Lat: ${empresa.ubicacionGps.lat}, Lng: ${empresa.ubicacionGps.lng}` : null },
+            { label: "TikTok", value: empresa.tiktok ? `@${empresa.tiktok}` : null },
+        ];
+
+        return (
+            <>
+                {details.map((detail, index) => {
+                    if (detail.value && detail.value !== 'N/A' &&
+                        !(typeof detail.value === 'object' && 'lat' in detail.value && detail.value.lat === 0 && detail.value.lng === 0)) {
+                        return (
+                            <p key={index}>
+                                <strong>{detail.label}:</strong>{" "}
+                                {detail.label === "URL Logo" || detail.label === "Sitio Web" ? (
+                                    <a href={String(detail.value)} target="_blank" rel="noopener noreferrer">
+                                        {String(detail.value)}
+                                    </a>
+                                ) : (
+                                    String(detail.value)
+                                )}
+                            </p>
+                        );
+                    }
+                    return null;
+                })}
+            </>
+        );
+    };
+
     const filteredEmpresas = empresas.filter((empresa) =>
-        empresa.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (empresa.categoria && empresa.categoria.toLowerCase().includes(searchTerm.toLowerCase())) ||
-        (empresa.descripcion && empresa.descripcion.toLowerCase().includes(searchTerm.toLowerCase())) ||
-        (empresa.telefono && empresa.telefono.includes(searchTerm))
+        empresa.nombre.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
     return (
         <IonPage>
             <IonHeader>
                 <IonToolbar>
-                    <IonTitle>Listado de Empresas</IonTitle>
-                    <IonButton slot="end" onClick={() => fetchEmpresas()}>
-                        <IonIcon icon={refresh} />
-                    </IonButton>
-                    <IonButton slot="end" routerLink="/admin/empresas/form">
-                        <IonIcon icon={add} />
-                    </IonButton>
+                    {/* No hay botones en la barra superior asociados a esta página */}
+                    <IonTitle>Empresas</IonTitle>
                 </IonToolbar>
             </IonHeader>
             <IonContent fullscreen className="ion-padding">
-                <IonItem>
-                    <IonLabel position="floating">Buscar Empresa</IonLabel>
-                    <IonInput
-                        value={searchTerm}
-                        onIonChange={handleSearchChange}
-                        maxlength={50}
-                    />
-                    <IonIcon slot="end" icon={search} />
-                </IonItem>
-
-                {selectedEmpresa && (
+                {selectedEmpresa ? (
+                    // Vista de detalles de una empresa
                     <IonCard className="ion-margin-top">
                         <IonCardHeader>
-                            <h2>Detalles de: <strong>{selectedEmpresa.nombre}</strong></h2>
+                            <IonCardTitle>Detalles de: <strong>{selectedEmpresa.nombre}</strong></IonCardTitle>
                         </IonCardHeader>
                         <IonCardContent>
-                            <p><strong>Dirección:</strong> {selectedEmpresa.direccion || 'N/A'}</p>
-                            <p><strong>Categoría:</strong> {selectedEmpresa.categoria || 'N/A'}</p>
-                            <p><strong>WhatsApp:</strong> {selectedEmpresa.whatsapp || 'N/A'}</p>
-                            <p><strong>Instagram:</strong> {selectedEmpresa.instagram || 'N/A'}</p>
-                            <p><strong>Descripción:</strong> {selectedEmpresa.descripcion || 'N/A'}</p>
-                            <p><strong>Teléfono:</strong> {selectedEmpresa.telefono || 'N/A'}</p>
-                            <p><strong>Email:</strong> {selectedEmpresa.email || 'N/A'}</p>
-                            <p><strong>URL Logo:</strong> {selectedEmpresa.logoUrl ? <a href={selectedEmpresa.logoUrl} target="_blank" rel="noopener noreferrer">{selectedEmpresa.logoUrl}</a> : 'N/A'}</p>
-                            <p><strong>Horario de Atención:</strong> {selectedEmpresa.horarioAtencion || 'N/A'}</p>
-                            <p><strong>Sitio Web:</strong> {selectedEmpresa.sitioWeb ? <a href={selectedEmpresa.sitioWeb} target="_blank" rel="noopener noreferrer">{selectedEmpresa.sitioWeb}</a> : 'N/A'}</p>
-                            <p><strong>Servicios:</strong> {selectedEmpresa.servicios && selectedEmpresa.servicios.length > 0 ? selectedEmpresa.servicios.join(', ') : 'N/A'}</p>
-                            <p><strong>Ubicación GPS:</strong> {selectedEmpresa.ubicacionGps && (selectedEmpresa.ubicacionGps.lat !== 0 || selectedEmpresa.ubicacionGps.lng !== 0) ? `Lat: ${selectedEmpresa.ubicacionGps.lat}, Lng: ${selectedEmpresa.ubicacionGps.lng}` : 'N/A'}</p>
-                            <p><strong>TikTok:</strong> {selectedEmpresa.tiktok ? `@${selectedEmpresa.tiktok}` : 'N/A'}</p>
-
-                            <IonButton expand="block" color="medium" onClick={handleCloseDetails} className="ion-margin-top">
-                                <IonIcon slot="start" icon={close} />
-                                Cerrar Detalles
-                            </IonButton>
-                            <IonButton
-                                expand="block"
-                                routerLink={`/admin/empresas/form/${selectedEmpresa.id}`}
-                                className="ion-margin-top"
-                            >
-                                <IonIcon slot="start" icon={create} />
-                                Editar Empresa
+                            {renderEmpresaDetails(selectedEmpresa)}
+                            <IonButton expand="block" color="medium" onClick={handleBackToList} className="ion-margin-top">
+                                Volver
                             </IonButton>
                         </IonCardContent>
                     </IonCard>
-                )}
-
-                <IonList className="ion-margin-top">
-                    {filteredEmpresas.length > 0 ? (
-                        filteredEmpresas.map((empresa) => (
-                            <IonItem key={empresa.id} button onClick={() => handleShowDetails(empresa)}>
-                                <IonLabel>
-                                    <h2>{empresa.nombre}</h2>
-                                </IonLabel>
-                            </IonItem>
-                        ))
-                    ) : (
+                ) : (
+                    // Vista de lista de empresas
+                    <>
                         <IonItem>
-                            <IonLabel>No hay empresas para mostrar.</IonLabel>
+                            <IonLabel position="floating">Buscar Empresa</IonLabel>
+                            <IonInput
+                                value={searchTerm}
+                                onIonChange={handleSearchChange}
+                                maxlength={50}
+                            />
                         </IonItem>
-                    )}
-                </IonList>
+
+                        {filteredEmpresas.length > 0 ? (
+                            filteredEmpresas.map((empresa) => (
+                                <IonCard key={empresa.id} button onClick={() => handleShowDetails(empresa)} className="ion-margin-top">
+                                    <IonCardHeader>
+                                        <IonCardTitle>{empresa.nombre}</IonCardTitle>
+                                    </IonCardHeader>
+                                    {/* La IonCardContent se elimina para mostrar solo el nombre en la lista */}
+                                </IonCard>
+                            ))
+                        ) : (
+                            <IonItem>
+                                <IonLabel>No hay empresas para mostrar.</IonLabel>
+                            </IonItem>
+                        )}
+                    </>
+                )}
 
                 <IonLoading isOpen={contextLoading} message={"Cargando empresas..."} />
                 <IonToast
