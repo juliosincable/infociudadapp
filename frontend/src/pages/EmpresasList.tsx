@@ -94,7 +94,7 @@ const EmpresasList: React.FC = () => {
             <IonHeader>
                 <IonToolbar>
                     {/* No hay botones en la barra superior asociados a esta página */}
-                    <IonTitle>Empresas</IonTitle>
+                    <IonTitle>infourbi</IonTitle>
                 </IonToolbar>
             </IonHeader>
             <IonContent fullscreen className="ion-padding">
