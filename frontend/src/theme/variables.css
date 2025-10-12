@@ -1,173 +1,76 @@
-/* src/theme/variables.css */
-
-/* --- Variables por defecto (tema claro - AHORA CON CIAN SÓLIDO EN EL FONDO GENERAL) --- */
 :root {
-  /** Ionic tertiary color **/
-  --ion-color-tertiary: #D500F9; /* Magenta Brillante */
-  --ion-color-tertiary-rgb: 213, 0, 249;
-  --ion-color-tertiary-contrast: #ffffff;
-  --ion-color-tertiary-contrast-rgb: 255, 255, 255;
-  --ion-color-tertiary-shade: #be00dd;
-  --ion-color-tertiary-tint: #df1aff;
+  /* Color Principal */
+  --ion-color-primary: #0077B6;
+  --ion-color-primary-rgb: 0, 119, 182;
+  --ion-color-primary-contrast: #ffffff;
+  --ion-color-primary-contrast-rgb: 255, 255, 255;
+  --ion-color-primary-shade: #0069a0;
+  --ion-color-primary-tint: #1a85be;
 
-  /* Tus variables personalizadas para el fondo de la app - TEMA CLARO (CIAN SÓLIDO) */
-  --app-color-background: #00FFFF; /* Fondo cian sólido para la página */
-  --app-gradient-bg: #00FFFF; /* Se mantiene para compatibilidad, aunque es un color sólido */
+  /* Color Secundario */
+  --ion-color-secondary: #00B4D8;
+  --ion-color-secondary-rgb: 0, 180, 216;
+  --ion-color-secondary-contrast: #000000;
+  --ion-color-secondary-contrast-rgb: 0, 0, 0;
+  --ion-color-secondary-shade: #009ebf;
+  --ion-color-secondary-tint: #1ac8e0;
 
-  /* --- Aplicar el fondo a los elementos principales en el tema claro --- */
-  /* Aplicar a body para el fondo general del viewport */
-  --ion-background-color: var(--app-color-background);
-  background: var(--app-gradient-bg);
-}
+  /* Color Terciario */
+  --ion-color-tertiary: #90E0EF;
+  --ion-color-tertiary-rgb: 144, 224, 239;
+  --ion-color-tertiary-contrast: #000000;
+  --ion-color-tertiary-contrast-rgb: 0, 0, 0;
+  --ion-color-tertiary-shade: #7fcae2;
+  --ion-color-tertiary-tint: #9ae8f3;
 
-/* Aplicar el fondo a elementos específicos (se heredarán de :root o body) */
-/* Sin !important aquí para permitir que los componentes como Card/Item tengan su propio color */
-ion-app {
-  --ion-background-color: var(--app-color-background);
-  background: var(--app-gradient-bg);
-}
+  /* Colores de feedback (no incluidos en tu paleta, se mantienen por defecto) */
+  --ion-color-success: #2ecc71;
+  --ion-color-success-rgb: 46, 204, 113;
+  --ion-color-success-contrast: #ffffff;
+  --ion-color-success-contrast-rgb: 255, 255, 255;
+  --ion-color-success-shade: #28b562;
+  --ion-color-success-tint: #42d37e;
 
-ion-content {
-  --background: var(--app-gradient-bg);
-  background: var(--app-gradient-bg);
-}
+  --ion-color-warning: #f1c40f;
+  --ion-color-warning-rgb: 241, 196, 15;
+  --ion-color-warning-contrast: #000000;
+  --ion-color-warning-contrast-rgb: 0, 0, 0;
+  --ion-color-warning-shade: #d4ac0d;
+  --ion-color-warning-tint: #f2cb24;
 
-/* --- Estilos para componentes específicos en el TEMA CLARO (tarjetas blancas, letras negras) --- */
-ion-card,
-ion-item {
-  --background: #ffffff; /* Fondo blanco para tarjetas y elementos de lista */
-  color: #000000; /* Color de texto predeterminado negro para estos elementos */
-}
+  --ion-color-danger: #e74c3c;
+  --ion-color-danger-rgb: 231, 76, 60;
+  --ion-color-danger-contrast: #ffffff;
+  --ion-color-danger-contrast-rgb: 255, 255, 255;
+  --ion-color-danger-shade: #cb4335;
+  --ion-color-danger-tint: #e95e51;
 
-/* Asegura que el texto dentro de IonCardContent sea negro */
-ion-card-content p,
-ion-card-content strong,
-ion-card-content a {
-  color: #000000;
-}
-/* Asegura que los títulos y encabezados dentro de las tarjetas sean negros */
-ion-card-header h2,
-ion-card-header h1,
-ion-card-title { /* Añadido ion-card-title para mayor especificidad */
-  color: #000000;
-}
+  /* Colores Oscuro y Claro */
+  --ion-color-dark: #03045E;
+  --ion-color-dark-rgb: 3, 4, 94;
+  --ion-color-dark-contrast: #ffffff;
+  --ion-color-dark-contrast-rgb: 255, 255, 255;
+  --ion-color-dark-shade: #030452;
+  --ion-color-dark-tint: #1c1d6d;
 
-/* Asegura que el texto dentro de IonLabel y IonInput sea negro en los items */
-ion-item ion-label,
-ion-item ion-input {
-  color: #000000;
-}
+  --ion-color-medium: #90E0EF;
+  --ion-color-medium-rgb: 144, 224, 239;
+  --ion-color-medium-contrast: #000000;
+  --ion-color-medium-contrast-rgb: 0, 0, 0;
+  --ion-color-medium-shade: #7fcae2;
+  --ion-color-medium-tint: #9ae8f3;
 
-/* También puedes especificar el color del placeholder del input si es necesario */
-ion-item ion-input {
-  --placeholder-color: #555555; /* Un gris oscuro para el placeholder */
-}
+  --ion-color-light: #CAF0F8;
+  --ion-color-light-rgb: 202, 240, 248;
+  --ion-color-light-contrast: #000000;
+  --ion-color-light-contrast-rgb: 0, 0, 0;
+  --ion-color-light-shade: #b2d5d8;
+  --ion-color-light-tint: #cbe3e8;
 
-/* Asegura que el título de la barra superior (IonHeader) sea negro */
-ion-header ion-title {
-  color: #000000;
-}
-
-/* Asegura que los íconos y texto de los botones en la barra superior (IonToolbar) sean negros,
-   a menos que tengan un color explícito (como 'tertiary' magenta) */
-ion-toolbar ion-button {
-  --color: #000000; /* Color de los íconos y texto de botones */
-}
-ion-toolbar ion-icon { /* Específico para íconos en el toolbar */
-  color: #000000;
-}
-
-
-/* --- Variables para el Tema Oscuro --- */
-body[data-theme="dark"] {
-  --ion-color-tertiary: #D500F9; /* Tu magenta para modo oscuro */
-  --ion-color-tertiary-rgb: 213, 0, 249;
-  --ion-color-tertiary-contrast: #ffffff;
-  --ion-color-tertiary-contrast-rgb: 255, 255, 255;
-  --ion-color-tertiary-shade: #be00dd;
-  --ion-color-tertiary-tint: #df1aff;
-
-  /* Tus variables personalizadas para el fondo de la app - TEMA OSCURO */
-  --app-color-background: #1C1C1C; /* Un gris oscuro */
-  --app-gradient-bg: linear-gradient(to bottom, #1C1C1C, #282828); /* Mantenemos el degradado oscuro */
-}
-
-/* --- Aplicar el fondo a los elementos principales en el tema oscuro --- */
-/* Mantenemos !important aquí si quieres que el fondo oscuro sea dominante */
-body[data-theme="dark"] ion-app,
-body[data-theme="dark"] ion-content {
-  --ion-background-color: var(--app-color-background) !important;
-  background: var(--app-gradient-bg) !important;
-  --background: var(--app-gradient-bg) !important;
-}
-
-/* --- Estilos para componentes específicos en el TEMA OSCURO --- */
-/* Las tarjetas en modo oscuro suelen ser más oscuras, ajusta si es necesario */
-body[data-theme="dark"] ion-card,
-body[data-theme="dark"] ion-item {
-  --background: #282828; /* Un gris oscuro para las tarjetas en modo oscuro */
-  color: #ffffff; /* Texto blanco en modo oscuro */
-}
-
-body[data-theme="dark"] ion-card-content p,
-body[data-theme="dark"] ion-card-content strong,
-body[data-theme="dark"] ion-card-content a {
-  color: #ffffff;
-}
-
-body[data-theme="dark"] ion-card-header h2,
-body[data-theme="dark"] ion-card-header h1,
-body[data-theme="dark"] ion-card-title {
-  color: #ffffff;
-}
-
-body[data-theme="dark"] ion-item ion-label,
-body[data-theme="dark"] ion-item ion-input {
-  color: #ffffff;
-}
-
-body[data-theme="dark"] ion-item ion-input {
-  --placeholder-color: #bbbbbb;
-}
-
-body[data-theme="dark"] ion-header ion-title {
-  color: #ffffff;
-}
-
-body[data-theme="dark"] ion-toolbar ion-icon {
-  color: #ffffff;
-}
-
-
-/* --- OTRAS REGLAS PARA COMPONENTES ESPECÍFICOS QUE USEN TERTIARY --- */
-/* Estas reglas aseguran que botones, toolbars, etc., con color="tertiary" usen tu magenta */
-ion-button[color="tertiary"] {
-  --background: var(--ion-color-tertiary);
-  --color: var(--ion-color-tertiary-contrast);
-}
-
-ion-toolbar[color="tertiary"] {
-  --background: var(--ion-color-tertiary);
-  --color: var(--ion-color-tertiary-contrast);
-}
-
-ion-icon[color="tertiary"] {
-  color: var(--ion-color-tertiary);
-  fill: var(--ion-color-tertiary);
-}
-
-/* Versiones para el modo oscuro */
-body[data-theme="dark"] ion-button[color="tertiary"] {
-  --background: var(--ion-color-tertiary);
-  --color: var(--ion-color-tertiary-contrast);
-}
-
-body[data-theme="dark"] ion-toolbar[color="tertiary"] {
-  --background: var(--ion-color-tertiary);
-  --color: var(--ion-color-tertiary-contrast);
-}
-
-body[data-theme="dark"] ion-icon[color="tertiary"] {
-  color: var(--ion-color-tertiary);
-  fill: var(--ion-color-tertiary);
+  /* Variables adicionales de tu código original */
+  --box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  --box-shadow-hover: 0 6px 16px rgba(0, 0, 0, 0.15);
+  --ion-background-color: #f4f5f8;
+  --ion-color-step-600: #666666;
+  --ion-color-step-900: #111111;
 }

@@ -5,35 +5,27 @@ const app = express();
 
 const dbURI = process.env.MONGODB_URI || "mongodb://mongo:27017/empresas";
 const PORT = 4000;
+const HOST = '0.0.0.0'; // <--- ¡Nueva configuración: Escucha en todas las interfaces!
 
 // *******************************************************************
-// ¡CORRECCIÓN CRUCIAL AQUÍ PARA EL CORS MANUAL!
-// Ajusta 'Access-Control-Allow-Origin' para permitir tu frontend público.
-// Elige UNA de estas opciones y asegúrate de que la otra esté comentada.
-
-// OPCIÓN 1: Permitir solo tu IP pública (recomendado para producción)
-/*
-app.use((req, res, next) => {
-    res.setHeader("Access-Control-Allow-Origin", "http://200.6.157.250"); // <--- Asegúrate de que esta línea esté activa
-    res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
-    res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
-    if (req.method === "OPTIONS") {
-        return res.sendStatus(200);
-    }
-    next();
-});
-*/
-
-// OPCIÓN 2: Permitir múltiples orígenes (si también desarrollas localmente y quieres ambas)
+// CORRECCIÓN CRUCIAL AQUÍ PARA EL CORS MANUAL
+// Permitir múltiples orígenes, incluyendo el localhost para desarrollo y la IP pública.
 app.use((req, res, next) => {
     const allowedOrigins = [
         "http://localhost:3000", // Para tu desarrollo local
-        "http://200.6.157.250"   // Para tu aplicación desplegada (IP de tu VPS)
+        "http://161.97.169.139"   // Para tu aplicación desplegada (IP de tu VPS)
     ];
     const origin = req.headers.origin;
+    
+    // Si la IP de tu frontend es diferente a 200.6.157.250, ajústala en la lista de allowedOrigins
+    
     if (allowedOrigins.includes(origin)) {
         res.setHeader("Access-Control-Allow-Origin", origin);
+    } else if (!origin) {
+        // Permitir solicitudes sin origen (como las de Postman o curl)
+        res.setHeader("Access-Control-Allow-Origin", "*");
     }
+
     res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
     res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
     if (req.method === "OPTIONS") {
@@ -50,7 +42,7 @@ mongoose.connect(dbURI)
     .then(() => console.log("Conexión a la base de datos exitosa"))
     .catch((error) => {
         console.error("ERROR CRÍTICO: Conexión a la base de datos fallida:", error);
-        // process.exit(1); // Descomentar solo si quieres que la app se detenga en caso de fallo de DB
+        // process.exit(1);
     });
 
 // Definimos un esquema y modelo de Mongoose
@@ -61,17 +53,6 @@ const EmpresaSchema = new mongoose.Schema({
     whatsapp: { type: String, trim: true },
     instagram: { type: String, trim: true },
     // Agrega aquí los demás campos si los usas en el frontend
-    // email: { type: String, trim: true },
-    // logoUrl: { type: String, trim: true },
-    // horarioAtencion: { type: String, trim: true },
-    // sitioWeb: { type: String, trim: true },
-    // descripcion: { type: String, trim: true },
-    // tiktok: { type: String, trim: true },
-    // servicios: [{ type: String, trim: true }],
-    // ubicacionGps: {
-    //   lat: { type: Number },
-    //   lng: { type: Number }
-    // }
 }, { timestamps: true });
 
 // **Configuración crucial: para transformar _id a id**
@@ -79,8 +60,8 @@ EmpresaSchema.set('toJSON', {
     virtuals: true, // Incluir propiedades virtuales (como 'id')
     transform: (doc, ret) => {
         ret.id = ret._id; // Mapea _id a id
-        delete ret._id;   // Elimina _id
-        delete ret.__v;   // Elimina la versión (__v)
+        delete ret._id;   // Elimina _id
+        delete ret.__v;   // Elimina la versión (__v)
     }
 });
 
@@ -162,6 +143,7 @@ apiRouter.delete("/empresas/:id", async (req, res) => {
 
 app.use('/api', apiRouter);
 
-app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
+// **LÍNEA CORREGIDA:** Ahora Express escucha en 0.0.0.0 (todas las IPs)
+app.listen(PORT, HOST, () => {
+    console.log(`Server is running on http://${HOST}:${PORT}`);
 });

@@ -17,8 +17,8 @@ import {
     IonCardContent,
     IonCardTitle,
 } from "@ionic/react";
-import { useEmpresas } from "../EmpresasContext";
-import { Empresa } from "../types";
+import { useEmpresas } from "../context/EmpresasContext";
+import { Empresa } from "../types/types";
 
 const EmpresasList: React.FC = () => {
     const { empresas, fetchEmpresas, isLoading: contextLoading, error: contextError, clearError } = useEmpresas();

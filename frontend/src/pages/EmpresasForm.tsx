@@ -19,8 +19,8 @@ import {
 } from "@ionic/react";
 import { save, arrowBack, trash } from "ionicons/icons";
 import { useParams, useHistory } from "react-router-dom";
-import { useEmpresas } from "../EmpresasContext";
-import { Empresa } from "../types";
+import { useEmpresas } from "../context/EmpresasContext";
+import { Empresa } from "../types/types";
 
 const EmpresasForm: React.FC = () => {
     const { id } = useParams<{ id?: string }>();

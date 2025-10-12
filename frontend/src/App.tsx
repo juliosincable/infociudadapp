@@ -31,7 +31,7 @@ import EmpresasForm from './pages/EmpresasForm';
 import EmpresasList from './pages/EmpresasList';
 import PublicPage from './pages/PublicPage';
 
-import { EmpresasProvider } from "./EmpresasContext";
+import { EmpresasProvider } from "./context/EmpresasContext";
 import { ThemeProvider } from "./theme/ThemeContext";
 
 /* Core CSS required for Ionic components to work properly */
