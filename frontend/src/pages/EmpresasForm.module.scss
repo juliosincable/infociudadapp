@@ -1,0 +1,24 @@
+/* 1. Estilos para el contenido que se desplaza (IonContent) */
+.contentArea {
+    /* Establece un color de fondo para el área de contenido (CORRECTO: usa --) */
+    --background: #f8f8f8; 
+    
+    /* 🚩 CORRECCIÓN: Usamos la variable CSS para el padding interno de IonContent. */
+    --padding-bottom: 30px; 
+}
+
+/* 2. Estilos para los ítems de la lista (IonItem) - ESTÁ BIEN */
+.formItem {
+    /* Estas propiedades (margin, box-shadow) se aplican bien al elemento host <IonItem> */
+    margin-bottom: 12px;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+/* 3. Estilos para el contenedor de botones inferiores (div) - ESTÁ BIEN */
+.buttonsWrapper {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    padding: 10px 0;
+}

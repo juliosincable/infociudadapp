@@ -12,8 +12,10 @@ COPY package*.json ./
 
 # Instala TODAS las dependencias.
 # Necesitamos las dependencias de desarrollo (como 'typescript', 'vite') para el paso de 'build'.
-# ¡CAMBIO CLAVE AQUÍ!
 RUN npm install --legacy-peer-deps
+
+# AÑADIDO: Instala SASS para poder compilar archivos SCSS
+RUN npm install -D sass
 
 # Copia todo el código fuente de tu aplicación al contenedor.
 COPY . .
@@ -30,32 +32,9 @@ FROM nginx:alpine
 # Elimina la configuración por defecto de Nginx si existe, para evitar conflictos.
 RUN rm -f /etc/nginx/conf.d/default.conf
 
-# Crea un nuevo archivo de configuración para Nginx que:
-# 1. Sirva los archivos estáticos de tu aplicación Ionic/React.
-# 2. Actúe como proxy inverso para todas las peticiones que empiecen con /api/ y las redirija al backend.
-RUN echo "server { \
-  listen 80; \
-  \
-  # Configuración para servir los archivos estáticos de tu frontend (Ionic/React)
-  location / { \
-    root /usr/share/nginx/html; \
-    index index.html; \
-    try_files \$uri \$uri/ /index.html; \
-  } \
-  \
-  # Configuración de proxy para redirigir peticiones /api/ al servicio backend
-  location /api/ { \
-    # 'backend' es el nombre del servicio Docker de tu backend (definido en docker-compose.yml)
-    # '4000' es el puerto interno en el que tu aplicación Node.js de backend está escuchando
-    proxy_pass http://backend:4000/api/; \
-    \
-    # Encabezados para pasar información útil (como la IP real del cliente) al backend
-    proxy_set_header Host \$host; \
-    proxy_set_header X-Real-IP \$remote_addr; \
-    proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for; \
-    proxy_set_header X-Forwarded-Proto \$scheme; \
-  } \
-}" > /etc/nginx/conf.d/default.conf
+# REPARADO: Copia tu archivo de configuración personalizado 'nginx-custom.conf'.
+# ESTO SOLUCIONA EL ERROR "nginx.conf": not found (LÍNEA 37)
+COPY nginx-custom.conf /etc/nginx/conf.d/default.conf
 
 # Copia la salida de la compilación (los archivos estáticos) desde la etapa 'builder'
 # Asume que la ruta de salida de Vite es 'dist'. Si Ionic usa otra (ej. 'www'), ajústala.

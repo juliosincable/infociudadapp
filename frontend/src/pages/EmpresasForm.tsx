@@ -15,7 +15,12 @@ import {
     IonToast,
     InputChangeEventDetail,
     IonLabel,
-    IonButtons // Importación esencial para agrupar botones
+    IonButtons, // Importación esencial para agrupar botones
+    IonGrid, // Importamos el componente Grid
+    IonRow, // Importamos el componente Row
+    IonCol, // Importamos el componente Col
+    // 💡 IMPORTAMOS EL HOOK DE CICLO DE VIDA DE IONIC REACT
+    useIonViewWillEnter 
 } from "@ionic/react";
 import { save, arrowBack, trash } from "ionicons/icons";
 import { useParams, useHistory } from "react-router-dom";
@@ -56,37 +61,51 @@ const EmpresasForm: React.FC = () => {
     const [toastMessage, setToastMessage] = useState("");
     const [isEditMode, setIsEditMode] = useState(false);
 
-    // useEffect principal para cargar y/o inicializar el formulario
-    useEffect(() => {
-        if (id) { // Estamos en modo edición
+    // --- LÓGICA DE INICIALIZACIÓN/CARGA CENTRALIZADA ---
+
+    // Función que carga o limpia el formulario. Se ejecutará cuando:
+    // 1. La vista va a entrar (useIonViewWillEnter).
+    // 2. La lista de empresas se carga (useEffect de dependencia).
+    const initializeForm = (currentEmpresas: Empresa[]) => {
+        console.log(`[EmpresasForm] Inicializando formulario para ID: ${id || 'Nuevo'}`);
+        
+        if (id) { // Modo edición
             setIsEditMode(true);
-            if (empresas.length === 0 && !isLoading) {
-                fetchEmpresas();
-            } else {
-                const empresaToEdit = empresas.find((emp) => emp.id === id);
-                if (empresaToEdit) {
-                    setNombre(empresaToEdit.nombre);
-                    setDireccion(empresaToEdit.direccion || "");
-                    setTelefono(empresaToEdit.telefono || "");
-                    setEmail(empresaToEdit.email || "");
-                    setLogoUrl(empresaToEdit.logoUrl || "");
-                    setHorarioAtencion(empresaToEdit.horarioAtencion || "");
-                    setSitioWeb(empresaToEdit.sitioWeb || "");
-                    setCategoria(empresaToEdit.categoria || "");
-                    setDescripcion(empresaToEdit.descripcion || "");
-                    setWhatsapp(empresaToEdit.whatsapp || "");
-                    setInstagram(empresaToEdit.instagram || "");
-                    setTiktok(empresaToEdit.tiktok || "");
-                    setServicios(empresaToEdit.servicios || []);
-                    setLatitud(empresaToEdit.ubicacionGps?.lat || 0);
-                    setLongitud(empresaToEdit.ubicacionGps?.lng || 0);
-                } else if (!isLoading) {
-                    setToastMessage("Empresa no encontrada.");
-                    setShowToast(true);
-                    history.replace("/empresasList");
-                }
+            
+            // Si las empresas aún no están cargadas, las solicitamos (esto disparará el useEffect)
+            if (currentEmpresas.length === 0 && !isLoading) {
+                 // No llamamos a fetchEmpresas aquí directamente, ya que el estado del Context 
+                 // (empresas) es una dependencia en el useEffect de abajo que manejará la carga.
+                 // Solo aseguramos que la lista se está intentando obtener.
+                return;
             }
-        } else { // Estamos en modo de creación
+
+            // Buscamos la empresa en la lista
+            const empresaToEdit = currentEmpresas.find((emp) => emp.id === id);
+
+            if (empresaToEdit) {
+                setNombre(empresaToEdit.nombre);
+                setDireccion(empresaToEdit.direccion || "");
+                setTelefono(empresaToEdit.telefono || "");
+                setEmail(empresaToEdit.email || "");
+                setLogoUrl(empresaToEdit.logoUrl || "");
+                setHorarioAtencion(empresaToEdit.horarioAtencion || "");
+                setSitioWeb(empresaToEdit.sitioWeb || "");
+                setCategoria(empresaToEdit.categoria || "");
+                setDescripcion(empresaToEdit.descripcion || "");
+                setWhatsapp(empresaToEdit.whatsapp || "");
+                setInstagram(empresaToEdit.instagram || "");
+                setTiktok(empresaToEdit.tiktok || "");
+                setServicios(empresaToEdit.servicios || []);
+                setLatitud(empresaToEdit.ubicacionGps?.lat || 0);
+                setLongitud(empresaToEdit.ubicacionGps?.lng || 0);
+            } else if (currentEmpresas.length > 0 && !isLoading) {
+                // Si ya tenemos la lista de empresas y la que buscamos no está
+                setToastMessage("Empresa no encontrada.");
+                setShowToast(true);
+                history.replace("/empresasList");
+            }
+        } else { // Modo creación (limpiar campos)
             setIsEditMode(false);
             setNombre("");
             setDireccion("");
@@ -104,9 +123,34 @@ const EmpresasForm: React.FC = () => {
             setLatitud(0);
             setLongitud(0);
         }
-    }, [id, empresas, history, fetchEmpresas, isLoading]);
+    };
+    
+    // 🔑 HOOK DE CICLO DE VIDA DE IONIC:
+    // Ejecuta la lógica de inicialización y asegura que el estado de 'empresas' se actualice
+    // si es necesario cuando la vista entra (útil para el modo Edición).
+    useIonViewWillEnter(() => {
+        // En modo Edición, si la lista de empresas no está cargada, la solicitamos.
+        // Esto es necesario porque el `useEffect` no se volverá a disparar a menos que 'id' cambie.
+        if (id && empresas.length === 0 && !isLoading) {
+            fetchEmpresas();
+        } else {
+            // Si la lista ya está cargada o estamos en modo Creación, inicializamos.
+            initializeForm(empresas);
+        }
+    });
 
-    // Efectos para manejar estados de carga y errores
+    // 💡 useEffect para manejar la carga asíncrona de empresas:
+    // Si la página entra en modo Edición, llama a initializeForm tan pronto como la lista 
+    // de 'empresas' se actualice.
+    useEffect(() => {
+        if (id && empresas.length > 0) {
+            initializeForm(empresas);
+        }
+        // Nota: El useEffect anterior ha sido reemplazado por la combinación de 
+        // useIonViewWillEnter y este useEffect de dependencia.
+    }, [empresas, id]); // Dependencias: lista de empresas y el ID de la ruta
+
+    // Efectos para manejar estados de carga y errores (se mantienen igual)
     useEffect(() => {
         setShowLoading(isLoading);
     }, [isLoading]);
@@ -235,8 +279,6 @@ const EmpresasForm: React.FC = () => {
                     {/* Título de la página en el centro */}
                     <IonTitle>{isEditMode ? "Editar Empresa" : "Nueva Empresa"}</IonTitle>
 
-                    {/* Eliminamos los botones de Guardar/Actualizar y Eliminar de aquí */}
-                    {/* <IonButtons slot="end"> ... </IonButtons> */}
                 </IonToolbar>
             </IonHeader>
             <IonContent fullscreen className="ion-padding">
@@ -402,22 +444,28 @@ const EmpresasForm: React.FC = () => {
                 </IonList>
 
                 {/* Contenedor para los botones de Guardar/Actualizar y Eliminar */}
-                <div className="ion-padding ion-margin-top ion-text-center">
-                    <IonButtons style={{ display: 'flex', justifyContent: 'center', gap: '10px' }}>
-                        {/* Botón de Eliminar: Solo visible en modo edición */}
-                        {isEditMode && (
-                            <IonButton expand="block" color="danger" onClick={handleDelete}>
-                                <IonIcon slot="start" icon={trash} />
-                                Eliminar
+                <IonGrid className="ion-padding ion-margin-top">
+                    {/* Botón de Eliminar: En su propia fila para que ocupe todo el ancho disponible y se apile. */}
+                    {isEditMode && (
+                        <IonRow>
+                            <IonCol>
+                                <IonButton expand="full" color="danger" onClick={handleDelete} className="ion-margin-bottom">
+                                    <IonIcon slot="start" icon={trash} />
+                                    Eliminar
+                                </IonButton>
+                            </IonCol>
+                        </IonRow>
+                    )}
+                    {/* Botón de Guardar/Actualizar: En su propia fila para que ocupe todo el ancho disponible. */}
+                    <IonRow>
+                        <IonCol>
+                            <IonButton expand="full" color="primary" onClick={handleSave}>
+                                <IonIcon slot="start" icon={save} />
+                                {isEditMode ? "Actualizar" : "Guardar"}
                             </IonButton>
-                        )}
-                        {/* Botón de Guardar/Actualizar: Texto dinámico */}
-                        <IonButton expand="block" color="primary" onClick={handleSave}>
-                            <IonIcon slot="start" icon={save} />
-                            {isEditMode ? "Actualizar" : "Guardar"}
-                        </IonButton>
-                    </IonButtons>
-                </div>
+                        </IonCol>
+                    </IonRow>
+                </IonGrid>
 
                 <IonLoading isOpen={showLoading} message={isEditMode ? "Guardando cambios..." : "Agregando empresa..."} />
                 <IonToast

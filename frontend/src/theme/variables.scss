@@ -74,3 +74,56 @@
   --ion-color-step-600: #666666;
   --ion-color-step-900: #111111;
 }
+
+
+
+/* -------------------------------------------
+ * Estilos BASE: Se aplican a todos los móviles
+ * ------------------------------------------- */
+
+// Definimos el ancho máximo del contenido de la app por defecto
+.app-container {
+  padding: 10px;
+  max-width: 100%;
+}
+
+// Ocultamos un elemento que solo queremos ver en escritorio
+.desktop-only-menu {
+  display: none;
+}
+
+/* -------------------------------------------
+ * PUNTOS DE QUIEBRE
+ * ------------------------------------------- */
+
+// ** 1. TABLETA (768px y más grandes) **
+@media (min-width: 768px) {
+  .app-container {
+    padding: 20px;
+  }
+  
+  // Mostramos dos columnas en tabletas
+  .content-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+// ** 2. ESCRITORIO (992px y más grandes) **
+@media (min-width: 992px) {
+  .app-container {
+    padding: 30px;
+    // Limitamos el ancho para que no se extienda demasiado en monitores ultra-anchos
+    max-width: 1400px;
+    margin: 0 auto; // Centramos el contenido
+  }
+
+  // Ahora mostramos el menú de escritorio
+  .desktop-only-menu {
+    display: block;
+  }
+  
+  // Mostramos tres columnas en escritorio
+  .content-grid {
+    grid-template-columns: 1fr 1fr 1fr;
+  }
+}

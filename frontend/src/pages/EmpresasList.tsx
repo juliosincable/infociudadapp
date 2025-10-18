@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import {
     IonContent,
     IonHeader,
@@ -16,6 +16,7 @@ import {
     IonCardHeader,
     IonCardContent,
     IonCardTitle,
+    useIonViewWillEnter, // Hook de ciclo de vida de Ionic React
 } from "@ionic/react";
 import { useEmpresas } from "../context/EmpresasContext";
 import { Empresa } from "../types/types";
@@ -25,9 +26,11 @@ const EmpresasList: React.FC = () => {
     const [searchTerm, setSearchTerm] = useState("");
     const [selectedEmpresa, setSelectedEmpresa] = useState<Empresa | null>(null);
 
-    useEffect(() => {
+    // useIonViewWillEnter se usa para cargar las empresas cada vez que la vista se hace visible.
+    useIonViewWillEnter(() => {
+        console.log("Cargando empresas al entrar en la vista...");
         fetchEmpresas();
-    }, [fetchEmpresas]);
+    });
 
     const handleSearchChange = (e: CustomEvent<InputChangeEventDetail>) => {
         setSearchTerm(e.detail.value ? String(e.detail.value) : "");
@@ -64,8 +67,11 @@ const EmpresasList: React.FC = () => {
         return (
             <>
                 {details.map((detail, index) => {
-                    if (detail.value && detail.value !== 'N/A' &&
-                        !(typeof detail.value === 'object' && 'lat' in detail.value && detail.value.lat === 0 && detail.value.lng === 0)) {
+                    // Criterio de validación: tiene un valor y no es la estructura GPS con ceros
+                    const hasValidValue = detail.value && detail.value !== 'N/A' &&
+                                          !(typeof detail.value === 'object' && 'lat' in detail.value && detail.value.lat === 0 && detail.value.lng === 0);
+                                          
+                    if (hasValidValue) {
                         return (
                             <p key={index}>
                                 <strong>{detail.label}:</strong>{" "}
@@ -93,7 +99,6 @@ const EmpresasList: React.FC = () => {
         <IonPage>
             <IonHeader>
                 <IonToolbar>
-                    {/* No hay botones en la barra superior asociados a esta página */}
                     <IonTitle>infourbi</IonTitle>
                 </IonToolbar>
             </IonHeader>
@@ -129,7 +134,6 @@ const EmpresasList: React.FC = () => {
                                     <IonCardHeader>
                                         <IonCardTitle>{empresa.nombre}</IonCardTitle>
                                     </IonCardHeader>
-                                    {/* La IonCardContent se elimina para mostrar solo el nombre en la lista */}
                                 </IonCard>
                             ))
                         ) : (

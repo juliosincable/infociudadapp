@@ -47,7 +47,7 @@ import '@ionic/react/css/flex-utils.css';
 import '@ionic/react/css/display.css';
 
 /* Variables de tema personalizadas */
-import './theme/variables.css';
+import './theme/variables.scss';
 
 setupIonicReact();
 
