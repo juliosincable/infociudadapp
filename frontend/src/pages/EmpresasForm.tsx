@@ -14,7 +14,7 @@ import {
     IonLoading,
     IonToast,
     InputChangeEventDetail,
-    IonLabel,
+    // 💡 REMOVIDO: IonLabel ya no es necesario para estos campos
     IonButtons, // Importación esencial para agrupar botones
     IonGrid, // Importamos el componente Grid
     IonRow, // Importamos el componente Row
@@ -281,191 +281,202 @@ const EmpresasForm: React.FC = () => {
 
                 </IonToolbar>
             </IonHeader>
+            
             <IonContent fullscreen className="ion-padding">
-                <IonList>
-                    {/* Campo: Nombre de la Empresa (Obligatorio) */}
-                    <IonItem>
-                        <IonInput
-                            label="Nombre de la Empresa"
-                            labelPlacement="floating"
-                            value={nombre}
-                            onIonChange={(e) => setNombre(String(e.detail.value || ''))}
-                            required
-                            maxlength={100}
-                        >
-                            <span slot="label" style={{color: 'red', marginLeft: '5px'}}>*</span>
-                        </IonInput>
-                    </IonItem>
-                    {/* Campo: Dirección */}
-                    <IonItem>
-                        <IonInput
-                            label="Dirección"
-                            labelPlacement="floating"
-                            value={direccion}
-                            onIonChange={(e) => setDireccion(String(e.detail.value || ''))}
-                            maxlength={200}
-                        />
-                    </IonItem>
-                    {/* Campo: Teléfono */}
-                    <IonItem>
-                        <IonInput
-                            label="Teléfono"
-                            labelPlacement="floating"
-                            value={telefono}
-                            onIonChange={(e) => setTelefono(String(e.detail.value || ''))}
-                            type="tel"
-                            maxlength={20}
-                        />
-                    </IonItem>
-                    {/* Campo: Email */}
-                    <IonItem>
-                        <IonInput
-                            label="Email"
-                            labelPlacement="floating"
-                            value={email}
-                            onIonChange={(e) => setEmail(String(e.detail.value || ''))}
-                            type="email"
-                            maxlength={100}
-                        />
-                    </IonItem>
-                    {/* Campo: URL Logo */}
-                    <IonItem>
-                        <IonInput
-                            label="URL Logo"
-                            labelPlacement="floating"
-                            value={logoUrl}
-                            onIonChange={(e) => setLogoUrl(String(e.detail.value || ''))}
-                            type="url"
-                            maxlength={255}
-                        />
-                    </IonItem>
-                    {/* Campo: Horario de Atención */}
-                    <IonItem>
-                        <IonInput
-                            label="Horario de Atención"
-                            labelPlacement="floating"
-                            value={horarioAtencion}
-                            onIonChange={(e) => setHorarioAtencion(String(e.detail.value || ''))}
-                            maxlength={100}
-                        />
-                    </IonItem>
-                    {/* Campo: Sitio Web */}
-                    <IonItem>
-                        <IonInput
-                            label="Sitio Web"
-                            labelPlacement="floating"
-                            value={sitioWeb}
-                            onIonChange={(e) => setSitioWeb(String(e.detail.value || ''))}
-                            type="url"
-                            maxlength={255}
-                        />
-                    </IonItem>
-                    {/* Campo: Categoría */}
-                    <IonItem>
-                        <IonInput
-                            label="Categoría"
-                            labelPlacement="floating"
-                            value={categoria}
-                            onIonChange={(e) => setCategoria(String(e.detail.value || ''))}
-                            maxlength={50}
-                        />
-                    </IonItem>
-                    {/* Campo: Descripción */}
-                    <IonItem>
-                        <IonTextarea
-                            label="Descripción"
-                            labelPlacement="floating"
-                            value={descripcion}
-                            onIonChange={(e) => setDescripcion(String(e.detail.value || ''))}
-                            rows={3}
-                            maxlength={500}
-                        />
-                    </IonItem>
-                    {/* Campo: WhatsApp */}
-                    <IonItem>
-                        <IonInput
-                            label="WhatsApp"
-                            labelPlacement="floating"
-                            value={whatsapp}
-                            onIonChange={(e) => setWhatsapp(String(e.detail.value || ''))}
-                            type="tel"
-                            maxlength={20}
-                        />
-                    </IonItem>
-                    {/* Campo: Instagram */}
-                    <IonItem>
-                        <IonInput
-                            label="Instagram (sin @)"
-                            labelPlacement="floating"
-                            value={instagram}
-                            onIonChange={(e) => setInstagram(String(e.detail.value || ''))}
-                            maxlength={50}
-                        />
-                    </IonItem>
-                    {/* Campo: TikTok */}
-                    <IonItem>
-                        <IonInput
-                            label="TikTok (sin @)"
-                            labelPlacement="floating"
-                            value={tiktok}
-                            onIonChange={(e) => setTiktok(String(e.detail.value || ''))}
-                            maxlength={50}
-                        />
-                    </IonItem>
-                    {/* Campo: Servicios */}
-                    <IonItem>
-                        <IonLabel position="floating">Servicios (separados por coma)</IonLabel>
-                        <IonInput
-                            value={servicios.join(', ')}
-                            onIonChange={handleServiceChange}
-                            maxlength={500}
-                        />
-                    </IonItem>
-                    {/* Campo: Latitud (GPS) */}
-                    <IonItem>
-                        <IonLabel position="floating">Latitud (GPS)</IonLabel>
-                        <IonInput
-                            value={latitud}
-                            onIonChange={(e) => setLatitud(parseFloat(String(e.detail.value || '0')) || 0)}
-                            type="number"
-                            step="any"
-                        />
-                    </IonItem>
-                    {/* Campo: Longitud (GPS) */}
-                    <IonItem>
-                        <IonLabel position="floating">Longitud (GPS)</IonLabel>
-                        <IonInput
-                            value={longitud}
-                            onIonChange={(e) => setLongitud(parseFloat(String(e.detail.value || '0')) || 0)}
-                            type="number"
-                            step="any"
-                        />
-                    </IonItem>
-                </IonList>
+                {/* 💡 CONTENEDOR PRINCIPAL: Aplica el centrado y margen de variables.scss */}
+                <div className="app-container"> 
+                    <IonList>
+                        {/* Campo: Nombre de la Empresa (Obligatorio) */}
+                        <IonItem>
+                            <IonInput
+                                label="Nombre de la Empresa"
+                                labelPlacement="floating"
+                                value={nombre}
+                                onIonChange={(e) => setNombre(String(e.detail.value || ''))}
+                                required
+                                maxlength={100}
+                            >
+                                <span slot="label" style={{color: 'red', marginLeft: '5px'}}>*</span>
+                            </IonInput>
+                        </IonItem>
+                        {/* Campo: Dirección */}
+                        <IonItem>
+                            <IonInput
+                                label="Dirección"
+                                labelPlacement="floating"
+                                value={direccion}
+                                onIonChange={(e) => setDireccion(String(e.detail.value || ''))}
+                                maxlength={200}
+                            />
+                        </IonItem>
+                        {/* Campo: Teléfono */}
+                        <IonItem>
+                            <IonInput
+                                label="Teléfono"
+                                labelPlacement="floating"
+                                value={telefono}
+                                onIonChange={(e) => setTelefono(String(e.detail.value || ''))}
+                                type="tel"
+                                maxlength={20}
+                            />
+                        </IonItem>
+                        {/* Campo: Email */}
+                        <IonItem>
+                            <IonInput
+                                label="Email"
+                                labelPlacement="floating"
+                                value={email}
+                                onIonChange={(e) => setEmail(String(e.detail.value || ''))}
+                                type="email"
+                                maxlength={100}
+                            />
+                        </IonItem>
+                        {/* Campo: URL Logo */}
+                        <IonItem>
+                            <IonInput
+                                label="URL Logo"
+                                labelPlacement="floating"
+                                value={logoUrl}
+                                onIonChange={(e) => setLogoUrl(String(e.detail.value || ''))}
+                                type="url"
+                                maxlength={255}
+                            />
+                        </IonItem>
+                        {/* Campo: Horario de Atención */}
+                        <IonItem>
+                            <IonInput
+                                label="Horario de Atención"
+                                labelPlacement="floating"
+                                value={horarioAtencion}
+                                onIonChange={(e) => setHorarioAtencion(String(e.detail.value || ''))}
+                                maxlength={100}
+                            />
+                        </IonItem>
+                        {/* Campo: Sitio Web */}
+                        <IonItem>
+                            <IonInput
+                                label="Sitio Web"
+                                labelPlacement="floating"
+                                value={sitioWeb}
+                                onIonChange={(e) => setSitioWeb(String(e.detail.value || ''))}
+                                type="url"
+                                maxlength={255}
+                            />
+                        </IonItem>
+                        {/* Campo: Categoría */}
+                        <IonItem>
+                            <IonInput
+                                label="Categoría"
+                                labelPlacement="floating"
+                                value={categoria}
+                                onIonChange={(e) => setCategoria(String(e.detail.value || ''))}
+                                maxlength={50}
+                            />
+                        </IonItem>
+                        {/* Campo: Descripción */}
+                        <IonItem>
+                            <IonTextarea
+                                label="Descripción"
+                                labelPlacement="floating"
+                                value={descripcion}
+                                onIonChange={(e) => setDescripcion(String(e.detail.value || ''))}
+                                rows={3}
+                                maxlength={500}
+                            />
+                        </IonItem>
+                        {/* Campo: WhatsApp */}
+                        <IonItem>
+                            <IonInput
+                                label="WhatsApp"
+                                labelPlacement="floating"
+                                value={whatsapp}
+                                onIonChange={(e) => setWhatsapp(String(e.detail.value || ''))}
+                                type="tel"
+                                maxlength={20}
+                            />
+                        </IonItem>
+                        {/* Campo: Instagram */}
+                        <IonItem>
+                            <IonInput
+                                label="Instagram (sin @)"
+                                labelPlacement="floating"
+                                value={instagram}
+                                onIonChange={(e) => setInstagram(String(e.detail.value || ''))}
+                                maxlength={50}
+                            />
+                        </IonItem>
+                        {/* Campo: TikTok */}
+                        <IonItem>
+                            <IonInput
+                                label="TikTok (sin @)"
+                                labelPlacement="floating"
+                                value={tiktok}
+                                onIonChange={(e) => setTiktok(String(e.detail.value || ''))}
+                                maxlength={50}
+                            />
+                        </IonItem>
+                        
+                        {/* Campo: Servicios */}
+                        <IonItem>
+                            <IonInput
+                                label="Servicios (separados por coma)"
+                                labelPlacement="floating"
+                                value={servicios.join(', ')}
+                                onIonChange={handleServiceChange}
+                                maxlength={500}
+                            />
+                        </IonItem>
+                        
+                        {/* Campo: Latitud (GPS) */}
+                        <IonItem>
+                            <IonInput
+                                label="Latitud (GPS)"
+                                labelPlacement="floating"
+                                value={latitud}
+                                onIonChange={(e) => setLatitud(parseFloat(String(e.detail.value || '0')) || 0)}
+                                type="number"
+                                step="any"
+                            />
+                        </IonItem>
+                        
+                        {/* Campo: Longitud (GPS) */}
+                        <IonItem>
+                            <IonInput
+                                label="Longitud (GPS)"
+                                labelPlacement="floating"
+                                value={longitud}
+                                onIonChange={(e) => setLongitud(parseFloat(String(e.detail.value || '0')) || 0)}
+                                type="number"
+                                step="any"
+                            />
+                        </IonItem>
+                    </IonList>
 
-                {/* Contenedor para los botones de Guardar/Actualizar y Eliminar */}
-                <IonGrid className="ion-padding ion-margin-top">
-                    {/* Botón de Eliminar: En su propia fila para que ocupe todo el ancho disponible y se apile. */}
-                    {isEditMode && (
+                    {/* Contenedor para los botones de Guardar/Actualizar y Eliminar */}
+                    <IonGrid className="ion-padding ion-margin-top">
+                        {/* Botón de Eliminar: En su propia fila para que ocupe todo el ancho disponible y se apile. */}
+                        {isEditMode && (
+                            <IonRow>
+                                <IonCol>
+                                    <IonButton expand="full" color="danger" onClick={handleDelete} className="ion-margin-bottom">
+                                        <IonIcon slot="start" icon={trash} />
+                                        Eliminar
+                                    </IonButton>
+                                </IonCol>
+                            </IonRow>
+                        )}
+                        {/* Botón de Guardar/Actualizar: En su propia fila para que ocupe todo el ancho disponible. */}
                         <IonRow>
                             <IonCol>
-                                <IonButton expand="full" color="danger" onClick={handleDelete} className="ion-margin-bottom">
-                                    <IonIcon slot="start" icon={trash} />
-                                    Eliminar
+                                <IonButton expand="full" color="primary" onClick={handleSave}>
+                                    <IonIcon slot="start" icon={save} />
+                                    {isEditMode ? "Actualizar" : "Guardar"}
                                 </IonButton>
                             </IonCol>
                         </IonRow>
-                    )}
-                    {/* Botón de Guardar/Actualizar: En su propia fila para que ocupe todo el ancho disponible. */}
-                    <IonRow>
-                        <IonCol>
-                            <IonButton expand="full" color="primary" onClick={handleSave}>
-                                <IonIcon slot="start" icon={save} />
-                                {isEditMode ? "Actualizar" : "Guardar"}
-                            </IonButton>
-                        </IonCol>
-                    </IonRow>
-                </IonGrid>
+                    </IonGrid>
+                </div>
+                
 
                 <IonLoading isOpen={showLoading} message={isEditMode ? "Guardando cambios..." : "Agregando empresa..."} />
                 <IonToast
