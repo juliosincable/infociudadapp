@@ -1,7 +1,8 @@
 // src/EmpresasContext.tsx
 
 import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
-import { Empresa, EmpresasContextType } from '../types/types'; // Asegúrate de que 'types' esté correctamente definido
+// CORRECCIÓN TS2307 (ruta relativa): Usamos '../' para subir de 'context' a 'src' y acceder a 'types'
+import { Empresa, EmpresasContextType } from '../types/types';
 
 const EmpresasContext = createContext<EmpresasContextType | undefined>(undefined);
 
@@ -11,9 +12,7 @@ export const EmpresasProvider: React.FC<{ children: ReactNode }> = ({ children }
     const [error, setError] = useState<string | null>(null);
 
     // *******************************************************************
-    // ¡CORRECCIÓN CRUCIAL AQUÍ!
-    // Apunta directamente a la IP de tu VPS y al puerto de tu backend (4000).
-    // Reemplaza '200.6.157.250' con la IP real de tu VPS si es diferente.
+    // URL principal para todas las operaciones (GET ALL y POST)
     const API_URL = 'http://161.97.169.139:4000/api/empresas'; 
     // *******************************************************************
 
@@ -21,7 +20,7 @@ export const EmpresasProvider: React.FC<{ children: ReactNode }> = ({ children }
         setIsLoading(true);
         setError(null);
         try {
-            console.log("Fetching empresas from API:", API_URL); // Loguea la URL completa
+            console.log("Fetching empresas from API:", API_URL); 
             const response = await fetch(API_URL);
 
             if (!response.ok) {
@@ -71,7 +70,8 @@ export const EmpresasProvider: React.FC<{ children: ReactNode }> = ({ children }
         setError(null);
         try {
             console.log(`Updating empresa con ID: ${id}, datos:`, updatedEmpresa);
-            const response = await fetch(`${API_URL.replace('/api/empresas', '')}/${id}`, { // Ajuste para URL base + ID
+            // CORRECCIÓN/SIMPLIFICACIÓN: Concatenamos el ID directamente a API_URL para PUT
+            const response = await fetch(`${API_URL}/${id}`, { 
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -91,14 +91,15 @@ export const EmpresasProvider: React.FC<{ children: ReactNode }> = ({ children }
         } finally {
             setIsLoading(false);
         }
-    }, [API_URL]);
+    }, [API_URL]); // Dependencia API_URL
 
     const deleteEmpresa = useCallback(async (id: string) => {
         setIsLoading(true);
         setError(null);
         try {
             console.log("Deleting empresa con ID:", id);
-            const response = await fetch(`${API_URL.replace('/api/empresas', '')}/${id}`, { // Ajuste para URL base + ID
+            // CORRECCIÓN/SIMPLIFICACIÓN: Concatenamos el ID directamente a API_URL para DELETE
+            const response = await fetch(`${API_URL}/${id}`, { 
                 method: 'DELETE',
             });
             if (!response.ok) {
@@ -113,7 +114,7 @@ export const EmpresasProvider: React.FC<{ children: ReactNode }> = ({ children }
         } finally {
             setIsLoading(false);
         }
-    }, [API_URL]);
+    }, [API_URL]); // Dependencia API_URL
 
     const clearError = useCallback(() => {
         setError(null);

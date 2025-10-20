@@ -74,9 +74,9 @@ const EmpresasForm: React.FC = () => {
             
             // Si las empresas aún no están cargadas, las solicitamos (esto disparará el useEffect)
             if (currentEmpresas.length === 0 && !isLoading) {
-                 // No llamamos a fetchEmpresas aquí directamente, ya que el estado del Context 
-                 // (empresas) es una dependencia en el useEffect de abajo que manejará la carga.
-                 // Solo aseguramos que la lista se está intentando obtener.
+                // No llamamos a fetchEmpresas aquí directamente, ya que el estado del Context 
+                // (empresas) es una dependencia en el useEffect de abajo que manejará la carga.
+                // Solo aseguramos que la lista se está intentando obtener.
                 return;
             }
 
@@ -490,5 +490,6 @@ const EmpresasForm: React.FC = () => {
         </IonPage>
     );
 };
+
 
 export default EmpresasForm;
