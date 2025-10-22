@@ -13,17 +13,17 @@ import { playCircle, radio, library, search } from 'ionicons/icons';
 // RECUERDA: Tus componentes reales (EmpresasForm, EmpresasList, PublicPage)
 // DEBEN tener su propia estructura de IonPage, IonHeader y IonContent.
 const HomeAdminContent: React.FC = () => (
-    <IonPage>
-        <IonHeader>
-            <IonToolbar>
-                <IonTitle>Home Admin</IonTitle>
-            </IonToolbar>
-        </IonHeader>
-        <IonContent className="ion-padding">
-            <h1>Bienvenido, Administrador</h1>
-            <p>Esta es la página principal de la vista de pestañas.</p>
-        </IonContent>
-    </IonPage>
+    <IonPage>
+        <IonHeader>
+            <IonToolbar>
+                <IonTitle>Home Admin</IonTitle>
+            </IonToolbar>
+        </IonHeader>
+        <IonContent className="ion-padding">
+            <h1>Bienvenido, Administrador</h1>
+            <p>Esta es la página principal de la vista de pestañas.</p>
+        </IonContent>
+    </IonPage>
 );
 
 // Componentes reales (asumiendo que tienen su estructura de IonPage completa)
@@ -37,45 +37,48 @@ const Home: React.FC = () => {
     const { path } = useRouteMatch();
 
     return (
-        <IonTabs>
-            
-            <IonRouterOutlet>
-                {/* CORRECCIÓN CLAVE: Redirigimos desde la ruta base al primer tab, usando 'path' */}
-                <Redirect exact path={path} to={`${path}/admin`} /> 
-                
-                {/* Rutas de las pestañas: Usamos `${path}` para construir las rutas anidadas */}
-                <Route path={`${path}/admin`} render={() => <HomeAdminContent />} exact={true} />
-                <Route path={`${path}/form`} render={() => <EmpresasForm />} exact={true} />
-                <Route path={`${path}/list`} render={() => <EmpresasList />} exact={true} />
-                <Route path={`${path}/public`} render={() => <PublicPage />} exact={true} />
-            </IonRouterOutlet>
+        <IonTabs>
+            
+            <IonRouterOutlet>
+                {/* CORRECCIÓN CLAVE: Redirigimos desde la ruta base al primer tab, usando 'path' */}
+                <Redirect exact path={path} to={`${path}/admin`} /> 
+                
+                {/* Rutas de las pestañas: Usamos `${path}` para construir las rutas anidadas */}
+                <Route path={`${path}/admin`} render={() => <HomeAdminContent />} exact={true} />
+                <Route path={`${path}/form`} render={() => <EmpresasForm />} exact={true} />
+                <Route path={`${path}/list`} render={() => <EmpresasList />} exact={true} />
+                <Route path={`${path}/public`} render={() => <PublicPage />} exact={true} />
+            </IonRouterOutlet>
 
-            {/* La barra de pestañas real de Ionic */}
-            <IonTabBar slot="bottom">
-                
-                {/* Botón Admin: Ahora usa playCircle */}
-                <IonTabButton tab="admin" href={`${path}/admin`}>
-                    <IonIcon icon={playCircle} /> 
-                    <IonLabel>Admin</IonLabel>
-                </IonTabButton>
+            {/* La barra de pestañas real de Ionic */}
+            <IonTabBar slot="bottom">
+                
+                {/* Botón 1: Admin */}
+                <IonTabButton tab="admin" href={`${path}/admin`}>
+                    <IonIcon icon={playCircle} /> 
+                    <IonLabel>Admin</IonLabel>
+                </IonTabButton>
 
-                <IonTabButton tab="form" href={`${path}/form`}>
-                    <IonIcon icon={radio} />
-                    <IonLabel>Formulario</IonLabel>
-                </IonTabButton>
+                {/* Botón 2: Formulario (Activa la vista al formulario) */}
+                <IonTabButton tab="form" href={`${path}/form`}>
+                    <IonIcon icon={radio} />
+                    <IonLabel>Formulario</IonLabel>
+                </IonTabButton>
 
-                <IonTabButton tab="list" href={`${path}/list`}>
-                    <IonIcon icon={library} />
-                    <IonLabel>Lista</IonLabel>
-                </IonTabButton>
+                {/* Botón 3: Lista */}
+                <IonTabButton tab="list" href={`${path}/list`}>
+                    <IonIcon icon={library} />
+                    <IonLabel>Lista</IonLabel>
+                </IonTabButton>
 
-                <IonTabButton tab="public" href={`${path}/public`}>
-                    <IonIcon icon={search} />
-                    <IonLabel>Público</IonLabel>
-                </IonTabButton>
-            </IonTabBar>
-        </IonTabs>
-    );
+                {/* Botón 4: Público */}
+                <IonTabButton tab="public" href={`${path}/public`}>
+                    <IonIcon icon={search} />
+                    <IonLabel>Público</IonLabel>
+                </IonTabButton>
+            </IonTabBar>
+        </IonTabs>
+    );
 }
 
 export default Home;

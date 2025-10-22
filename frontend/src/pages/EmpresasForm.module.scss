@@ -1,0 +1,21 @@
+/* src/pages/EmpresasForm.module.scss */
+
+// Arreglo para que el contenido del formulario no se oculte bajo el Header
+// Esto aplica solo en la vista de escritorio (> 992px)
+@media (min-width: 992px) {
+    
+    // Apuntamos al IonContent anidado que maneja el scroll en desktop.
+    .desktop-scroll-content {
+        // Ionic usa variables CSS para los paddings internos de IonContent.
+        // Forzamos el padding superior (normalmente 56px para el header)
+        // en el IonContent anidado.
+        --padding-top: 56px !important;
+        
+        // También puedes asegurar que haya un poco de padding al fondo
+        // por si el formulario es muy largo.
+        --padding-bottom: 20px !important;
+    }
+}
+
+
+/* El resto de tus estilos va aquí... */
